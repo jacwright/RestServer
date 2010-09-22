@@ -30,9 +30,15 @@ class RestFormat
 {
 
 	const PLAIN = 'text/plain';
-	const HTML = 'text/html; charset=UTF-8';
+	const HTML = 'text/html';
 	const AMF = 'applicaton/x-amf';
 	const JSON = 'application/json';
+	static public $formats = array(
+		'plain' => RestFormat::PLAIN,
+		'html' => RestFormat::HTML,
+		'amf' => RestFormat::AMF,
+		'json' => RestFormat::JSON,
+	);
 }
 
 /**
@@ -153,11 +159,10 @@ class RestServer
 				throw new Exception('Invalid method or class; must be a classname or object');
 			}
 			
-			$len = strlen($basePath);
-			if ($len && substr($basePath, 0, 1) == '/') {
+			if (substr($basePath, 0, 1) == '/') {
 				$basePath = substr($basePath, 1);
 			}
-			if ($len && substr($basePath, -1) != '/') {
+			if ($basePath && substr($basePath, -1) != '/') {
 				$basePath .= '/';
 			}
 
@@ -274,7 +279,7 @@ class RestServer
 		}
 	}
 
-	protected function generateMap($class, $basePath = '')
+	protected function generateMap($class, $basePath)
 	{
 		if (is_object($class)) {
 			$reflection = new ReflectionObject($class);
@@ -287,8 +292,8 @@ class RestServer
 		foreach ($methods as $method) {
 			$doc = $method->getDocComment();
 			$noAuth = strpos($doc, '@noAuth') !== false;
-			if (preg_match_all('/@url\s+(GET|POST|PUT|DELETE|HEAD|OPTIONS)[ \t]*\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
-
+			if (preg_match_all('/@url[ \t]+(GET|POST|PUT|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
+				
 				$params = $method->getParameters();
 				
 				foreach ($matches as $match) {
@@ -305,7 +310,7 @@ class RestServer
 					$call[] = $args;
 					$call[] = null;
 					$call[] = $noAuth;
-
+					
 					$this->map[$httpMethod][$url] = $call;
 				}
 			}
@@ -326,7 +331,7 @@ class RestServer
 	public function getMethod()
 	{
 		$method = $_SERVER['REQUEST_METHOD'];
-		$override = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] : $_GET['method'];
+		$override = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] : (isset($_GET['method']) ? $_GET['method'] : '');
 		if ($method == 'POST' && strtoupper($override) == 'PUT') {
 			$method = 'PUT';
 		} elseif ($method == 'POST' && strtoupper($override) == 'DELETE') {
@@ -339,7 +344,10 @@ class RestServer
 	{
 		$format = RestFormat::PLAIN;
 		$accept = explode(',', $_SERVER['HTTP_ACCEPT']);
-		if (in_array(RestFormat::AMF, $accept) || $_GET['format'] == 'amf') {
+		$override = isset($_GET['format']) ? $_GET['format'] : '';
+		if (isset(RestFormat::$formats[$override])) {
+			$format = RestFormat::$formats[$override];
+		} elseif (in_array(RestFormat::AMF, $accept)) {
 			$format = RestFormat::AMF;
 		} elseif (in_array(RestFormat::JSON, $accept)) {
 			$format = RestFormat::JSON;

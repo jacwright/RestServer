@@ -49,6 +49,7 @@ class RestServer
 	public $cacheDir = '.';
 	public $realm;
 	public $mode;
+	public $root;
 	
 	protected $map = array();
 	protected $errorClasses = array();
@@ -63,6 +64,8 @@ class RestServer
 	{
 		$this->mode = $mode;
 		$this->realm = $realm;
+		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+		$this->root = ($dir == '.' ? '' : $dir . '/');
 	}
 	
 	public function  __destruct()
@@ -315,6 +318,8 @@ class RestServer
 		if ($path[strlen($path) - 1] == '/') {
 			$path = substr($path, 0, -1);
 		}
+		// remove root from path
+		if ($this->root) $path = str_replace($this->root, '', $path);
 		return $path;
 	}
 	

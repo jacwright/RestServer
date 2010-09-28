@@ -299,7 +299,7 @@ class RestServer
 				foreach ($matches as $match) {
 					$httpMethod = $match[1];
 					$url = $basePath . $match[2];
-					if ($url[strlen($url) - 1] == '/') {
+					if ($url && $url[strlen($url) - 1] == '/') {
 						$url = substr($url, 0, -1);
 					}
 					$call = array($class, $method->getName());

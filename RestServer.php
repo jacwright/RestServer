@@ -343,7 +343,9 @@ class RestServer
 	public function getFormat()
 	{
 		$format = RestFormat::PLAIN;
-		$accept = explode(',', $_SERVER['HTTP_ACCEPT']);
+		$accept_mod = preg_replace('/\s+/i', '', $_SERVER['HTTP_ACCEPT']); // ensures that exploding the HTTP_ACCEPT string does not get confused by whitespaces
+		$accept = explode(',', $accept_mod);
+				
 		$override = isset($_GET['format']) ? $_GET['format'] : '';
 		if (isset(RestFormat::$formats[$override])) {
 			$format = RestFormat::$formats[$override];

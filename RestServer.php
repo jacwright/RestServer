@@ -345,8 +345,14 @@ class RestServer
 		$format = RestFormat::PLAIN;
 		$accept_mod = preg_replace('/\s+/i', '', $_SERVER['HTTP_ACCEPT']); // ensures that exploding the HTTP_ACCEPT string does not get confused by whitespaces
 		$accept = explode(',', $accept_mod);
-				
-		$override = isset($_GET['format']) ? $_GET['format'] : '';
+
+		if (isset($_REQUEST['format']) || isset($_SERVER['HTTP_FORMAT'])) {
+			// give GET/POST precedence over HTTP request headers
+			$override = isset($_SERVER['HTTP_FORMAT']) ? $_SERVER['HTTP_FORMAT'] : '';
+			$override = isset($_REQUEST['format']) ? $_REQUEST['format'] : $override;
+			$override = trim($override);
+		}
+		
 		if (isset(RestFormat::$formats[$override])) {
 			$format = RestFormat::$formats[$override];
 		} elseif (in_array(RestFormat::AMF, $accept)) {

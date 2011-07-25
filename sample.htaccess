@@ -1,0 +1,8 @@
+# Apache needs to let you overrite this (AllowOverride Indexes or AllowOverride All)
+DirectoryIndex index.php
+<IfModule mod_rewrite.c>
+	# Turn Rewrite Engine on
+	RewriteEngine On
+	# Send all requests to index.php (index.php will parse the request url and routes accordingly)
+	RewriteRule ^.*$ index.php [QSA,L]
+</IfModule>

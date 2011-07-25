@@ -35,6 +35,7 @@ class RestFormat
 	const JSON = 'application/json';
 	static public $formats = array(
 		'plain' => RestFormat::PLAIN,
+		'txt' => RestFormat::PLAIN,
 		'html' => RestFormat::HTML,
 		'amf' => RestFormat::AMF,
 		'json' => RestFormat::JSON,
@@ -325,6 +326,8 @@ class RestServer
 		}
 		// remove root from path
 		if ($this->root) $path = str_replace($this->root, '', $path);
+		// remove trailing format definition, like /controller/action.json -> /controller/action
+		$path = preg_replace('/\.(\w+)$/i', '', $path);
 		return $path;
 	}
 	
@@ -343,8 +346,23 @@ class RestServer
 	public function getFormat()
 	{
 		$format = RestFormat::PLAIN;
-		$accept = explode(',', $_SERVER['HTTP_ACCEPT']);
-		$override = isset($_GET['format']) ? $_GET['format'] : '';
+		$accept_mod = preg_replace('/\s+/i', '', $_SERVER['HTTP_ACCEPT']); // ensures that exploding the HTTP_ACCEPT string does not get confused by whitespaces
+		$accept = explode(',', $accept_mod);
+
+		if (isset($_REQUEST['format']) || isset($_SERVER['HTTP_FORMAT'])) {
+			// give GET/POST precedence over HTTP request headers
+			$override = isset($_SERVER['HTTP_FORMAT']) ? $_SERVER['HTTP_FORMAT'] : '';
+			$override = isset($_REQUEST['format']) ? $_REQUEST['format'] : $override;
+			$override = trim($override);
+		}
+		
+		// Check for trailing dot-format syntax like /controller/action.format -> action.json
+		if(preg_match('/\.(\w+)$/i', $_SERVER['REQUEST_URI'], &$matches)) {
+			$override = $matches[1];
+		}
+
+		// Give GET parameters precedence before all other options to alter the format
+		$override = isset($_GET['format']) ? $_GET['format'] : $override;
 		if (isset(RestFormat::$formats[$override])) {
 			$format = RestFormat::$formats[$override];
 		} elseif (in_array(RestFormat::AMF, $accept)) {

@@ -411,6 +411,8 @@ class RestServer
 					unset($data->$prop);
 				}
 			}
+                        error_log($data);
+                        error_log(json_encode($data));
 			$data = json_encode($data);
 			if ($data && $this->mode == 'debug') {
 				$data = $this->json_format($data);
@@ -472,7 +474,7 @@ class RestServer
 					}
 					break;
 				case '"':
-					if($c > 0 && $json[$c-1] != '\\') {
+					if(($c > 0 && $json[$c-1] != '\\') || $c == 0 ) {
 						$in_string = !$in_string;
 					}
 				default:

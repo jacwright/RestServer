@@ -411,8 +411,6 @@ class RestServer
 					unset($data->$prop);
 				}
 			}
-                        error_log($data);
-                        error_log(json_encode($data));
 			$data = json_encode($data);
 			if ($data && $this->mode == 'debug') {
 				$data = $this->json_format($data);

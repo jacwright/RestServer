@@ -33,12 +33,14 @@ class RestFormat
 	const HTML = 'text/html';
 	const AMF = 'applicaton/x-amf';
 	const JSON = 'application/json';
+	const JSONP = 'application/json-p';
 	static public $formats = array(
 		'plain' => RestFormat::PLAIN,
 		'txt' => RestFormat::PLAIN,
 		'html' => RestFormat::HTML,
 		'amf' => RestFormat::AMF,
 		'json' => RestFormat::JSON,
+		'jsonp' => RestFormat::JSONP,
 	);
 }
 
@@ -369,6 +371,8 @@ class RestServer
 			$format = RestFormat::AMF;
 		} elseif (in_array(RestFormat::JSON, $accept)) {
 			$format = RestFormat::JSON;
+		} elseif (in_array(RestFormat::JSONP, $accept)) {
+			$format = RestFormat::JSONP;
 		}
 		return $format;
 	}
@@ -383,7 +387,7 @@ class RestServer
 			$stream = new Zend_Amf_Parse_InputStream($data);
 			$deserializer = new Zend_Amf_Parse_Amf3_Deserializer($stream);
 			$data = $deserializer->readTypeMarker();
-		} else {
+		} else { // JSON, JSONP
 			$data = json_decode($data);
 		}
 		
@@ -415,6 +419,13 @@ class RestServer
 			if ($data && $this->mode == 'debug') {
 				$data = $this->json_format($data);
 			}
+                        if ($this->format == RestFormat::JSONP) {
+                          if (array_key_exists('callback', $_GET) && preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $_GET['callback']) == 1) {
+                                        $data = $_GET['callback'] . '(' . $data . ')';
+                                } else {
+                                        $this->handleError(400);
+                                }
+                        }
 		}
 
 		echo $data;

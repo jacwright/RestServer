@@ -137,13 +137,14 @@ class RestServer
 				}
 				
 				$result = call_user_func_array(array($obj, $method), $params);
+				
+				if ($result !== null) {
+					$this->sendData($result);
+				}
 			} catch (RestException $e) {
 				$this->handleError($e->getCode(), $e->getMessage());
-			}
-			
-			if ($result !== null) {
-				$this->sendData($result);
-			}
+			}			
+		
 		} else {
 			$this->handleError(404);
 		}

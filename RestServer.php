@@ -33,12 +33,16 @@ class RestFormat
 	const HTML = 'text/html';
 	const AMF = 'applicaton/x-amf';
 	const JSON = 'application/json';
+	const JSONP = 'application/json-p';
+        const XML = 'text/xml';
 	static public $formats = array(
 		'plain' => RestFormat::PLAIN,
 		'txt' => RestFormat::PLAIN,
 		'html' => RestFormat::HTML,
 		'amf' => RestFormat::AMF,
 		'json' => RestFormat::JSON,
+		'jsonp' => RestFormat::JSONP,
+                'xml' => RestFormat::XML,
 	);
 }
 
@@ -370,6 +374,10 @@ class RestServer
 			$format = RestFormat::AMF;
 		} elseif (in_array(RestFormat::JSON, $accept)) {
 			$format = RestFormat::JSON;
+		} elseif (in_array(RestFormat::JSONP, $accept)) {
+			$format = RestFormat::JSONP;
+		} elseif (in_array(RestFormat::XML, $accept)) {
+			$format = RestFormat::XML;
 		}
 		return $format;
 	}
@@ -384,7 +392,15 @@ class RestServer
 			$stream = new Zend_Amf_Parse_InputStream($data);
 			$deserializer = new Zend_Amf_Parse_Amf3_Deserializer($stream);
 			$data = $deserializer->readTypeMarker();
-		} else {
+		} elseif ($this->format == RestFormat::XML) {
+                        require_once('XML/Serializer.php');
+                        $unserializer = &new XML_Unserializer();
+                        $unserializer->setOption('parseAttributes', true);
+                        $unserializer->setOption('decodeFunction', 'strtolower');
+                        
+                        $result = $unserializer->unserialize($xml);
+                        $data = $unserializer->getUnserializedData();
+		} else { // JSON, JSONP
 			$data = json_decode($data);
 		}
 		
@@ -405,6 +421,17 @@ class RestServer
 			$serializer = new Zend_Amf_Parse_Amf3_Serializer($stream);
 			$serializer->writeTypeMarker($data);
 			$data = $stream->getStream();
+                } elseif ($this->format == RestFormat::XML) {
+                        require_once('XML/Serializer.php');
+                        $options = array(
+                                XML_SERIALIZER_OPTION_INDENT               => '  ',
+                                XML_SERIALIZER_OPTION_LINEBREAKS           => "\n",
+                                XML_SERIALIZER_OPTION_SCALAR_AS_ATTRIBUTES => true,
+                                XML_SERIALIZER_OPTION_RETURN_RESULT        => true,
+                                XML_SERIALIZER_OPTION_DEFAULT_TAG          => "item"
+                                         );
+                        $serializer = &new XML_Serializer($options);
+                        $data = $serializer->serialize($data);
 		} else {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
@@ -416,6 +443,13 @@ class RestServer
 			if ($data && $this->mode == 'debug') {
 				$data = $this->json_format($data);
 			}
+                        if ($this->format == RestFormat::JSONP) {
+                          if (array_key_exists('callback', $_GET) && preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $_GET['callback']) == 1) {
+                                        $data = $_GET['callback'] . '(' . $data . ')';
+                                } else {
+                                        $this->handleError(400);
+                                }
+                        }
 		}
 
 		echo $data;
@@ -473,7 +507,7 @@ class RestServer
 					}
 					break;
 				case '"':
-					if($c > 0 && $json[$c-1] != '\\') {
+					if(($c > 0 && $json[$c-1] != '\\') || $c == 0 ) {
 						$in_string = !$in_string;
 					}
 				default:

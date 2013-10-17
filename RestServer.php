@@ -72,7 +72,7 @@ class RestServer
 		$this->mode = $mode;
 		$this->realm = $realm;
 		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
-		$this->root = ($dir == '.' ? '' : $dir . '/');
+		$this->root = ($dir == '.' ? '' : ($dir != '/')? $dir . '/':$dir);
 	}
 	
 	public function  __destruct()
@@ -237,7 +237,7 @@ class RestServer
 			$args = $call[2];
 			
 			if (!strstr($url, '$')) {
-				if ($url == $this->url) {
+				if ($url == str_replace($this->root, '', $this->url)) {
 					if (isset($args['data'])) {
 						$params = array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;
@@ -321,10 +321,7 @@ class RestServer
 
 	public function getPath()
 	{
-		$path = substr(preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']), 1);
-		if ($path[strlen($path) - 1] == '/') {
-			$path = substr($path, 0, -1);
-		}
+		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 		// remove root from path
 		if ($this->root) $path = str_replace($this->root, '', $path);
 		// remove trailing format definition, like /controller/action.json -> /controller/action
@@ -358,7 +355,7 @@ class RestServer
 		}
 		
 		// Check for trailing dot-format syntax like /controller/action.format -> action.json
-		if(preg_match('/\.(\w+)$/i', $_SERVER['REQUEST_URI'], &$matches)) {
+		if(preg_match('/\.(\w+)$/i', $_SERVER['REQUEST_URI'], $matches)) {
 			$override = $matches[1];
 		}
 

@@ -44,7 +44,7 @@ class TestController
     /**
      * Gets the user by id or current user
      *
-     * @url GET /users/:id
+     * @url GET /users/$id
      * @url GET /users/current
      */
     public function getUser($id = null)
@@ -62,7 +62,7 @@ class TestController
      * Saves a user to the database
      *
      * @url POST /users
-     * @url PUT /users/:id
+     * @url PUT /users/$id
      */
     public function saveUser($id = null, $data)
     {
@@ -86,7 +86,7 @@ which is a valid representation of a string in JSON.
 
 Moving on to the next method, `login`, we see the `@url` maps any POSTs to http://www.example.com/login to the `login` method. Getting data from a regular web-type POST is the same as any PHP application, allowing you to use your own validation or other framework in conjunction with this REST server. Sessions can also be kept if desired. Though keeping sessions isn’t true REST style, often all we want a REST server for is to serve up data to our ajax application, and it can be easier to just use sessions than something more RESTful.
 
-Next we have our `getUser` method (you’ll notice that it doesn’t really matter what I name my methods because our `@url` directives define what URLs map to the method). You can see a couple of things here. First, we have multiple `@url` mappings for this method. And second, there is an odd `/:id` in that first URL mapping. RestServer treats any `:keyword` placeholders as wildcards in the URL and will take that section of the URL and pass it into the parameter with the same name in the method. In this example, when hitting http://www.example.com/users/1234, `$id` will equal 1234. When hitting http://www.example.com/users/current, `$id` will equal null. It doesn’t matter what order your parameters are in, so long as they have the same name as the placeholder (`:id` and `$id`, `:username` and `$username`). You’ll also want to be sure to make your parameters optional (`$id = null`) when you have several URL mappings that don’t all require a parameter. Otherwise you’ll have an error thrown telling you that you didn’t pass in a required parameter.
+Next we have our `getUser` method (you’ll notice that it doesn’t really matter what I name my methods because our `@url` directives define what URLs map to the method). You can see a couple of things here. First, we have multiple `@url` mappings for this method. And second, there is an odd `/$id` in that first URL mapping. RestServer treats any `:keyword` placeholders as wildcards in the URL and will take that section of the URL and pass it into the parameter with the same name in the method. In this example, when hitting http://www.example.com/users/1234, `$id` will equal 1234. When hitting http://www.example.com/users/current, `$id` will equal null. It doesn’t matter what order your parameters are in, so long as they have the same name as the placeholder (`:id` and `$id`, `:username` and `$username`). You’ll also want to be sure to make your parameters optional (`$id = null`) when you have several URL mappings that don’t all require a parameter. Otherwise you’ll have an error thrown telling you that you didn’t pass in a required parameter.
 
 One last thing to note in `getUser` is that this method simply returns a `User` object. This gets serialized into JSON (or potentially XML) and printed out for consumption by the application.
 
@@ -182,7 +182,7 @@ You may provide errors to your API users easily by throwing an excetion with the
     /**
      * Gets the user by id or current user
      *
-     * @url GET /users/:id
+     * @url GET /users/$id
      * @url GET /users/current
      */
     public function getUser($id = null)

@@ -237,7 +237,7 @@ class RestServer
 			$args = $call[2];
 			
 			if (!strstr($url, '$')) {
-				if ($url == str_replace($this->root, '', $this->url)) {
+				if ($url == $this->url) {
 					if (isset($args['data'])) {
 						$params = array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;
@@ -323,7 +323,7 @@ class RestServer
 	{
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 		// remove root from path
-		if ($this->root) $path = str_replace($this->root, '', $path);
+		if ($this->root) $path = preg_replace('/^' . preg_quote($this->root, '/') . '/', '', $path);
 		// remove trailing format definition, like /controller/action.json -> /controller/action
 		$path = preg_replace('/\.(\w+)$/i', '', $path);
 		return $path;

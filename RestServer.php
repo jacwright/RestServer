@@ -72,7 +72,7 @@ class RestServer
 		$this->mode = $mode;
 		$this->realm = $realm;
 		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
-		$this->root = ($dir == '.' ? '' : ($dir != '/')? $dir . '/':$dir);
+		$this->root = ($dir == '.' ? '' : (substr($dir, -1) != '/') ? $dir . '/' : $dir);
 	}
 	
 	public function  __destruct()

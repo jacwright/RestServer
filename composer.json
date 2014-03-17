@@ -1,0 +1,25 @@
+{
+    "name": "jacwright/RestServer",
+    "type": "library",
+    "description": "php rest server for very light-weight REST APIs",
+    "keywords": ["php", "rest", "rest-server", "light-weight", "http", "json"],
+    "homepage": "https://github.com/jacwright/RestServer",
+    "license": "LGPLv3",
+    "authors": [
+        {
+            "name": "Jacob Wright",
+            "email": "jacwright@gmail.com",
+            "homepage": "http://jacwright.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "autoload": {
+        "psr-0": {
+            "Jacwright\\RestServer": "source/"
+        }
+    }
+}

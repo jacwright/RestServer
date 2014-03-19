@@ -23,7 +23,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace Jacwright\RestServe;
+namespace Jacwright\RestServer;
 
 use Exception;
 use ReflectionClass;

@@ -217,7 +217,7 @@ class RestServer
 			} elseif (file_exists($this->cacheDir . '/urlMap.cache')) {
 				$map = unserialize(file_get_contents($this->cacheDir . '/urlMap.cache'));
 			}
-			if ($map && is_array($map)) {
+			if (isset($map) && is_array($map)) {
 				$this->map = $map;
 				$this->cached = true;
 			}

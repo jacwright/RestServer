@@ -53,7 +53,7 @@ class RestServer
 	public $method;
 	public $params;
 	public $format;
-	public $cacheDir = '.';
+	public $cacheDir = __DIR__;
 	public $realm;
 	public $mode;
 	public $root;

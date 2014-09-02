@@ -406,7 +406,7 @@ class RestServer
 			$stream = new Zend_Amf_Parse_OutputStream();
 			$serializer = new Zend_Amf_Parse_Amf3_Serializer($stream);
 			$serializer->writeTypeMarker($data);
-			$data = $stream->getStream();
+			$data = $stream->getStream();}
 
 		elseif ($this->format == RestFormat::XML) {
 

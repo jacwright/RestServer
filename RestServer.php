@@ -59,6 +59,7 @@ class RestServer
 	public $realm;
 	public $mode;
 	public $root;
+	private $data;
 	
 	protected $map = array();
 	protected $errorClasses = array();
@@ -139,7 +140,11 @@ class RestServer
 						exit;
 					}
 				}
-				
+				/*in case of sending json using post method the class can get this object by getData()
+				but can not use the gathered info in sendData() */
+				if($this->data){
+					$params['data'] = $this->data;
+				}
 				$result = call_user_func_array(array($obj, $method), $params);
 				
 				if ($result !== null) {

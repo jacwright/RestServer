@@ -488,6 +488,7 @@ class RestServer
 		$new_json = "";
 		$indent_level = 0;
 		$in_string = false;
+		$backslashed = -1;
 		
 		$len = strlen($json);
 		
@@ -526,8 +527,15 @@ class RestServer
 						$new_json .= $char;
 					}
 					break;
+				case '\\':
+					if ($backslashed != $c) {
+						// next letter will be backslashed
+						$backslashed = $c+1; 
+					}
+					$new_json .= $char;
+					break;
 				case '"':
-					if($c > 0 && $json[$c-1] != '\\') {
+					if($c != $backslashed) {
 						$in_string = !$in_string;
 					}
 				default:

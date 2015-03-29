@@ -190,12 +190,15 @@ class RestServer
 			} elseif (class_exists($class)) {
 				$reflection = new ReflectionClass($class);
 			}
-			
-			if ($reflection->hasMethod($method))
+
+			if (isset($reflection))
 			{
-				$obj = is_string($class) ? new $class() : $class;
-				$obj->$method();
-				return;
+				if ($reflection->hasMethod($method))
+				{
+					$obj = is_string($class) ? new $class() : $class;
+					$obj->$method();
+					return;
+				}
 			}
 		}
 		
@@ -272,7 +275,7 @@ class RestServer
 					end($params);
 					$max = key($params);
 					for ($i = 0; $i < $max; $i++) {
-						if (!key_exists($i, $params)) {
+						if (!array_key_exists($i, $params)) {
 							$params[$i] = null;
 						}
 					}

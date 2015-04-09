@@ -250,8 +250,8 @@ class RestServer
 						$params[$args['data']] = $this->data;
 						$call[2] = $params;
 					}
-					return $call;
-				}
+					
+				}return $call;
 			} else {
 				$regex = preg_replace('/\\\\\$([\w\d]+)\.\.\./', '(?P<$1>.+)', str_replace('\.\.\.', '...', preg_quote($url)));
 				$regex = preg_replace('/\\\\\$([\w\d]+)/', '(?P<$1>[^\/]+)', $regex);

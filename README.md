@@ -217,7 +217,7 @@ git clone https://github.com/jacwright/RestServer .
 composer install
 ```
 
-## By [Packagist](https://packagist.org/packages/jacwright/RestServer]
+## By [Packagist](https://packagist.org/packages/jacwright/RestServer)
 
 ```
 cd <your project>

@@ -23,26 +23,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Constants used in RestServer Class.
- */
-class RestFormat
-{
+namespace Jacwright\RestServer;
 
-	const PLAIN = 'text/plain';
-	const HTML = 'text/html';
-	const AMF = 'applicaton/x-amf';
-	const JSON = 'application/json';
-	const XML = 'application/xml';
-	static public $formats = array(
-		'plain' => RestFormat::PLAIN,
-		'txt' => RestFormat::PLAIN,
-		'html' => RestFormat::HTML,
-		'amf' => RestFormat::AMF,
-		'json' => RestFormat::JSON,
-		'xml'  => RestFormat::XML,
-	);
-}
+use Exception;
+use ReflectionClass;
+use ReflectionObject;
+use ReflectionMethod;
+use DOMDocument;
+use Zend_Amf_Parse_Amf3_Deserializer;
+use Zend_Amf_Parse_Amf3_Serializer;
+use Zend_Amf_Parse_InputStream;
+use Zend_Amf_Parse_OutputStream;
 
 /**
  * Description of RestServer
@@ -51,6 +42,7 @@ class RestFormat
  */
 class RestServer
 {
+    //@todo add type hint
 	public $url;
 	public $method;
 	public $params;
@@ -135,7 +127,7 @@ class RestServer
 				
 				if (!$noAuth && method_exists($obj, 'authorize')) {
 					if (!$obj->authorize()) {
-						$this->sendData($this->unauthorized(true));
+						$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
 						exit;
 					}
 				}
@@ -247,7 +239,7 @@ class RestServer
 				if ($url == $this->url) {
 					if (isset($args['data'])) {
 						$params = array_fill(0, $args['data'] + 1, null);
-						$params[$args['data']] = $this->data;
+						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
 						$call[2] = $params;
 					}
 					return $call;
@@ -296,7 +288,7 @@ class RestServer
 			$reflection = new ReflectionClass($class);
 		}
 		
-		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);    //@todo $reflection might not be instantiated
 		
 		foreach ($methods as $method) {
 			$doc = $method->getDocComment();
@@ -384,11 +376,9 @@ class RestServer
 		$data = file_get_contents('php://input');
 		
 		if ($this->format == RestFormat::AMF) {
-			require_once 'Zend/Amf/Parse/InputStream.php';
-			require_once 'Zend/Amf/Parse/Amf3/Deserializer.php';
-			$stream = new Zend_Amf_Parse_InputStream($data);
-			$deserializer = new Zend_Amf_Parse_Amf3_Deserializer($stream);
-			$data = $deserializer->readTypeMarker();
+			$stream         = new Zend_Amf_Parse_InputStream($data);
+			$deserializer   = new Zend_Amf_Parse_Amf3_Deserializer($stream);
+			$data           = $deserializer->readTypeMarker();
 		} else {
 			$data = json_decode($data);
 		}
@@ -404,9 +394,7 @@ class RestServer
 		header('Content-Type: ' . $this->format);
 
 		if ($this->format == RestFormat::AMF) {
-			require_once 'Zend/Amf/Parse/OutputStream.php';
-			require_once 'Zend/Amf/Parse/Amf3/Serializer.php';
-			$stream = new Zend_Amf_Parse_OutputStream();
+			$stream     = new Zend_Amf_Parse_OutputStream();
 			$serializer = new Zend_Amf_Parse_Amf3_Serializer($stream);
 			$serializer->writeTypeMarker($data);
 			$data = $stream->getStream();}
@@ -419,7 +407,7 @@ class RestServer
 					unset($data->$prop);
 				}
 			}
-			$data = $this->xml_encode($data);
+			$data = $this->xml_encode($data);   //@todo method returns void
 			if ($data && $this->mode == 'debug') {
 				$data = $this->json_format($data);
 			}
@@ -446,7 +434,7 @@ class RestServer
 		header("{$_SERVER['SERVER_PROTOCOL']} $code");
 	}
 	
-	private function xml_encode($mixed, $domElement=null, $DOMDocument=null) {
+	private function xml_encode($mixed, $domElement=null, $DOMDocument=null) {  //@todo add type hint for $domElement and $DOMDocument
     if (is_null($DOMDocument)) {
         $DOMDocument =new DOMDocument;
         $DOMDocument->formatOutput = true;
@@ -541,6 +529,7 @@ class RestServer
 					if($c != $backslashed) {
 						$in_string = !$in_string;
 					}
+                    break;
 				default:
 					$new_json .= $char;
 					break;					
@@ -587,14 +576,4 @@ class RestServer
 		'501' => 'Not Implemented',
 		'503' => 'Service Unavailable'
 	);
-}
-
-class RestException extends Exception
-{
-	
-	public function __construct($code, $message = null)
-	{
-		parent::__construct($message, $code);
-	}
-	
 }

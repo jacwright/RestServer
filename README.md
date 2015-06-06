@@ -204,3 +204,22 @@ You may provide errors to your API users easily by throwing an excetion with the
 
 
 You have control over how your REST service handles errors. You can add an error controller using `$server->addErrorClass('ErrorController');`. This controller can define methods named `handle401` or `handle404` to add your own custom error handling logic.
+
+# Installation
+
+## By [Hand](jacwright/RestServer)
+
+```
+cd <your project>
+mkdir -p vendor/jacwright/RestServer
+cd vendor/jacwright/RestServer
+git clone https://github.com/jacwright/RestServer .
+composer install
+```
+
+## By [Packagist](https://packagist.org/packages/jacwright/RestServer]
+
+```
+cd <your project>
+composer require 'jacwright/RestServer:dev-master'
+```

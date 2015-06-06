@@ -21,7 +21,7 @@ class TestController
     public function login()
     {
         $username = $_POST['username'];
-        $password = $_POST['password'];
+        $password = $_POST['password']; //@todo remove since it is not needed anywhere
         return array("success" => "Logged in " . $username);
     }
 

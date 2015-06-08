@@ -30,10 +30,6 @@ use ReflectionClass;
 use ReflectionObject;
 use ReflectionMethod;
 use DOMDocument;
-use Zend_Amf_Parse_Amf3_Deserializer;
-use Zend_Amf_Parse_Amf3_Serializer;
-use Zend_Amf_Parse_InputStream;
-use Zend_Amf_Parse_OutputStream;
 
 /**
  * Description of RestServer
@@ -363,8 +359,6 @@ class RestServer
 		$override = isset($_GET['format']) ? $_GET['format'] : $override;
 		if (isset(RestFormat::$formats[$override])) {
 			$format = RestFormat::$formats[$override];
-		} elseif (in_array(RestFormat::AMF, $accept)) {
-			$format = RestFormat::AMF;
 		} elseif (in_array(RestFormat::JSON, $accept)) {
 			$format = RestFormat::JSON;
 		}
@@ -374,15 +368,8 @@ class RestServer
 	public function getData()
 	{
 		$data = file_get_contents('php://input');
-		
-		if ($this->format == RestFormat::AMF) {
-			$stream         = new Zend_Amf_Parse_InputStream($data);
-			$deserializer   = new Zend_Amf_Parse_Amf3_Deserializer($stream);
-			$data           = $deserializer->readTypeMarker();
-		} else {
-			$data = json_decode($data);
-		}
-		
+        $data = json_decode($data);
+
 		return $data;
 	}
 	
@@ -393,13 +380,7 @@ class RestServer
 		header("Expires: 0");
 		header('Content-Type: ' . $this->format);
 
-		if ($this->format == RestFormat::AMF) {
-			$stream     = new Zend_Amf_Parse_OutputStream();
-			$serializer = new Zend_Amf_Parse_Amf3_Serializer($stream);
-			$serializer->writeTypeMarker($data);
-			$data = $stream->getStream();}
-
-		elseif ($this->format == RestFormat::XML) {
+		if ($this->format == RestFormat::XML) {
 
 		if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;

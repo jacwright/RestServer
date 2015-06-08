@@ -15,8 +15,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=5.3.3",
-        "zf1/zend-amf": "1.12.11"
+        "php": ">=5.3.3"
     },
     "autoload": {
         "psr-0": {

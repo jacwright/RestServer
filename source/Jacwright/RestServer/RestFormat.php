@@ -32,7 +32,6 @@ class RestFormat
 {
 	const PLAIN = 'text/plain';
 	const HTML  = 'text/html';
-	const AMF   = 'applicaton/x-amf';
 	const JSON  = 'application/json';
 	const XML   = 'application/xml';
 
@@ -41,7 +40,6 @@ class RestFormat
 		'plain' => RestFormat::PLAIN,
 		'txt'   => RestFormat::PLAIN,
 		'html'  => RestFormat::HTML,
-		'amf'   => RestFormat::AMF,
 		'json'  => RestFormat::JSON,
 		'xml'   => RestFormat::XML,
 	);

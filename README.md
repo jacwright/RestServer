@@ -1,7 +1,5 @@
 A PHP REST server for providing a very light-weight REST API. Very easy to set up and get going. Independent from other libraries and frameworks. Supports HTTP authentication.
 
-Initial Documentation from http://jacwright.com/250/simple-rest-server-in-php-supports-json-amf/
-
 ## Simple REST server in PHP
 
 After building a couple of RESTful services using the [Zend Framework](http://framework.zend.com/), I decided to create a dead simple REST server that allowed me to skip all the features I didn’t need as well as a **tons of classes** that came with Zend Framework MVC. There are still useful features to add (XML support for example), but overall I’m quite happy with what I’ve come up with.
@@ -125,32 +123,6 @@ That’s it. You can add as many classes as you like. If there are conflicts, cl
 
 You can [view the RestServer class](https://github.com/jacwright/RestServer/blob/master/RestServer.php), copy it and use it for your own purposes. It is under the MIT license. Features to be added include XML support and HTTP Authentication support. If you make this class better please share your updates with everyone by leaving a comment. I will try and keep this class updated with new features as they are shared. I hope you enjoy!
 
-I changed the title of this post to remove the AMF portion but was asked to cover it, so I will quickly talk about the AMF support. RestServer supports the AMF format in addition to the JSON format. This is a binary format used by Adobe Flash in their remoting services, but because their remoting services are not RESTful, you can’t use classes such as RemoteObject with REST.
-
-In order to use the AMF format with this service, you’ll need to have the Zend Framework in your classpath so that the classes to serialize and deserialize AMF are present (e.g. Zend/Amf/Parse/Amf3/Serializer.php). Then you’re ready so server up AMF. The way you consume AMF in Flash is using URLLoader or URLStream to load the data and ByteArray to convert it into an object. To tell the server you want AMF rather than JSON your URLRequest object will need to add an Accept header of “application/x-amf”. Below I will show you how this could be done.
-
-```php
-public function getUser():void
-{
-    var loader:URLLoader = new URLLoader();
-    loader.dataFormat = URLLoaderDataFormat.BINARY;
-    var request:URLRequest = new URLRequest("http://www.example.com/users/current");
-    request.requestHeaders.push(new URLRequestHeader("Accept", "application/x-amf"));
-    loader.addEventListener(Event.COMPLETE, onComplete);
-    loader.load(request);
-}
-
-private function onComplete(event:Event):void
-{
-    var loader:URLLoader = event.target as URLLoader;
-    var byteArray:ByteArray = loader.data as ByteArray;
-    var user:Object = byteArray.readObject();
-    // do something with the user
-}
-```
-
-You can even make your PHP objects cast into their actionscript equivalents using the $_explicitType property or getASClassName method in PHP as defined in the [documentation](http://framework.zend.com/manual/en/zend.amf.server.html#zend.amf.server.typedobjects) and by using registerAlias in Flash.
-
 Good luck and let me know if you end up using it!
 
 **Update:** I am including an example .htaccess file for anyone who might need it. It will only rewrite requests to files that don’t exist, so you can have images, css, or other PHP files in your webroot and they will still work. Anything that would give a 404 will redirect to your index.php file.
@@ -204,3 +176,22 @@ You may provide errors to your API users easily by throwing an excetion with the
 
 
 You have control over how your REST service handles errors. You can add an error controller using `$server->addErrorClass('ErrorController');`. This controller can define methods named `handle401` or `handle404` to add your own custom error handling logic.
+
+# Installation
+
+## By [Hand](jacwright/RestServer)
+
+```
+cd <your project>
+mkdir -p vendor/jacwright/RestServer
+cd vendor/jacwright/RestServer
+git clone https://github.com/jacwright/RestServer .
+composer install
+```
+
+## By [Packagist](https://packagist.org/packages/jacwright/RestServer)
+
+```
+cd <your project>
+composer require 'jacwright/RestServer:dev-master'
+```

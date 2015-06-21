@@ -179,7 +179,7 @@ You have control over how your REST service handles errors. You can add an error
 
 # Installation
 
-## By [Hand](jacwright/RestServer)
+## By [Hand](https://github.com/jacwright/RestServer)
 
 ```
 cd <your project>

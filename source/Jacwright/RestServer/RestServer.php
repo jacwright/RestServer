@@ -41,7 +41,7 @@ use DOMDocument;
  */
 class RestServer
 {
-    //@todo add type hint
+	//@todo add type hint
 	public $url;
 	public $method;
 	public $params;
@@ -379,7 +379,7 @@ class RestServer
 	public function getData()
 	{
 		$data = file_get_contents('php://input');
-        $data = json_decode($data);
+		$data = json_decode($data);
 
 		return $data;
 	}
@@ -399,11 +399,7 @@ class RestServer
 					unset($data->$prop);
 				}
 			}
-			$data = $this->xml_encode($data);   //@todo method returns void
-			if ($data && $this->mode == 'debug') {
-				$data = $this->json_format($data);
-			}
-		
+			$this->xml_encode($data);
 		} else {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
@@ -411,13 +407,12 @@ class RestServer
 					unset($data->$prop);
 				}
 			}
-			$data = json_encode($data);
-			if ($data && $this->mode == 'debug') {
-				$data = $this->json_format($data);
+			$options = 0;
+			if ($this->mode == 'debug') {
+				$options = JSON_PRETTY_PRINT;
 			}
+			echo json_encode($data, $options);
 		}
-
-		echo $data;
 	}
 
 	public function setStatus($code)
@@ -427,108 +422,42 @@ class RestServer
 	}
 	
 	private function xml_encode($mixed, $domElement=null, $DOMDocument=null) {  //@todo add type hint for $domElement and $DOMDocument
-    if (is_null($DOMDocument)) {
-        $DOMDocument =new DOMDocument;
-        $DOMDocument->formatOutput = true;
-        $this->xml_encode($mixed, $DOMDocument, $DOMDocument);
-        echo $DOMDocument->saveXML();
-    }
-    else {
-        if (is_array($mixed)) {
-            foreach ($mixed as $index => $mixedElement) {
-                if (is_int($index)) {
-                    if ($index === 0) {
-                        $node = $domElement;
-                    }
-                    else {
-                        $node = $DOMDocument->createElement($domElement->tagName);
-                        $domElement->parentNode->appendChild($node);
-                    }
-                }
-                else {
-                    $plural = $DOMDocument->createElement($index);
-                    $domElement->appendChild($plural);
-                    $node = $plural;
-                    if (!(rtrim($index, 's') === $index)) {
-                        $singular = $DOMDocument->createElement(rtrim($index, 's'));
-                        $plural->appendChild($singular);
-                        $node = $singular;
-                    }
-                }
- 
-                $this->xml_encode($mixedElement, $node, $DOMDocument);
-            }
-        }
-        else {
-            $domElement->appendChild($DOMDocument->createTextNode($mixed));
-        }
-    }
-}
-	// Pretty print some JSON
-	private function json_format($json)
-	{
-		$tab = "  ";
-		$new_json = "";
-		$indent_level = 0;
-		$in_string = false;
-		$backslashed = -1;
-		
-		$len = strlen($json);
-		
-		for($c = 0; $c < $len; $c++) {
-			$char = $json[$c];
-			switch($char) {
-				case '{':
-				case '[':
-					if(!$in_string) {
-						$new_json .= $char . "\n" . str_repeat($tab, $indent_level+1);
-						$indent_level++;
-					} else {
-						$new_json .= $char;
+		if (is_null($DOMDocument)) {
+			$DOMDocument =new DOMDocument;
+			$DOMDocument->formatOutput = true;
+			$this->xml_encode($mixed, $DOMDocument, $DOMDocument);
+			echo $DOMDocument->saveXML();
+		}
+		else {
+			if (is_array($mixed)) {
+				foreach ($mixed as $index => $mixedElement) {
+					if (is_int($index)) {
+						if ($index === 0) {
+							$node = $domElement;
+						}
+						else {
+							$node = $DOMDocument->createElement($domElement->tagName);
+							$domElement->parentNode->appendChild($node);
+						}
 					}
-					break;
-				case '}':
-				case ']':
-					if(!$in_string) {
-						$indent_level--;
-						$new_json .= "\n" . str_repeat($tab, $indent_level) . $char;
-					} else {
-						$new_json .= $char;
+					else {
+						$plural = $DOMDocument->createElement($index);
+						$domElement->appendChild($plural);
+						$node = $plural;
+						if (!(rtrim($index, 's') === $index)) {
+							$singular = $DOMDocument->createElement(rtrim($index, 's'));
+							$plural->appendChild($singular);
+							$node = $singular;
+						}
 					}
-					break;
-				case ',':
-					if(!$in_string) {
-						$new_json .= ",\n" . str_repeat($tab, $indent_level);
-					} else {
-						$new_json .= $char;
-					}
-					break;
-				case ':':
-					if(!$in_string) {
-						$new_json .= ": ";
-					} else {
-						$new_json .= $char;
-					}
-					break;
-				case '\\':
-					if ($backslashed != $c) {
-						// next letter will be backslashed
-						$backslashed = $c+1; 
-					}
-					$new_json .= $char;
-					break;
-				case '"':
-					if($c != $backslashed) {
-						$in_string = !$in_string;
-					}
-                    break;
-				default:
-					$new_json .= $char;
-					break;					
+
+					$this->xml_encode($mixedElement, $node, $DOMDocument);
+				}
+			}
+			else {
+				$domElement->appendChild($DOMDocument->createTextNode($mixed));
 			}
 		}
-		
-		return $new_json;
 	}
 
 

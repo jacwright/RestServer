@@ -56,4 +56,17 @@ class TestController
         $user = array("id" => $id, "name" => null);
         return $user; // returning the updated or newly created user object
     }
+
+    /**
+     * Get Charts
+     * @url GET /charts
+     * @url GET /charts/$id
+     * @url GET /charts/$id/$date
+     * @url GET /charts/$id/$date/$interval/
+     * @url GET /charts/$id/$date/$interval/$interval_months
+     */
+    public function getCharts($id=null, $date=null, $interval = 30, $interval_months = 12)
+    {
+        echo "$id, $date, $interval, $interval_months";
+    }
 }

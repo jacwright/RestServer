@@ -25,6 +25,9 @@
 
 namespace Jacwright\RestServer;
 
+require(__DIR__ . '/RestFormat.php');
+require(__DIR__ . '/RestException.php');
+
 use Exception;
 use ReflectionClass;
 use ReflectionObject;
@@ -237,6 +240,8 @@ class RestServer
 						$params = array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
 						$call[2] = $params;
+					} else {
+						$call[2] = [];
 					}
 					return $call;
 				}

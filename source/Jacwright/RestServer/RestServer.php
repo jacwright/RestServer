@@ -64,10 +64,16 @@ class RestServer
 	{
 		$this->mode = $mode;
 		$this->realm = $realm;
+		// Set the root
 		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
-		if ($dir == '.') $this->root = '/';
-		elseif (substr($dir, -1) != '/') $this->root = $dir . '/';
-		else $this->root = $dir;
+		if ($dir == '.') {
+			$dir = '/';
+		} else {
+			// add a slash at the beginning and end
+			if (substr($dir, -1) != '/') $dir .= '/';
+			if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
+		}
+		$this->root = $dir;
 	}
 	
 	public function  __destruct()

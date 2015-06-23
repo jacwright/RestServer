@@ -417,8 +417,13 @@ class RestServer
 
 	public function setStatus($code)
 	{
-		$code .= ' ' . $this->codes[strval($code)];
-		header("{$_SERVER['SERVER_PROTOCOL']} $code");
+		if (function_exists('http_response_code')) {
+			http_response_code($code);
+		} else {
+			$protocol = $_SERVER['SERVER_PROTOCOL'] ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+			$code .= ' ' . $this->codes[strval($code)];
+			header("$protocol $code");
+		}
 	}
 	
 	private function xml_encode($mixed, $domElement=null, $DOMDocument=null) {  //@todo add type hint for $domElement and $DOMDocument

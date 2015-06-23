@@ -1,5 +1,7 @@
 <?php
 
+use \Jacwright\RestServer\RestException;
+
 class TestController
 {
     /**
@@ -59,6 +61,7 @@ class TestController
 
     /**
      * Get Charts
+     * 
      * @url GET /charts
      * @url GET /charts/$id
      * @url GET /charts/$id/$date
@@ -68,5 +71,14 @@ class TestController
     public function getCharts($id=null, $date=null, $interval = 30, $interval_months = 12)
     {
         echo "$id, $date, $interval, $interval_months";
+    }
+
+    /**
+     * Throws an error
+     * 
+     * @url GET /error
+     */
+    public function throwError() {
+        throw new RestException(401, "Empty password not allowed");
     }
 }

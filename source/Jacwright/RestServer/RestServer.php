@@ -329,9 +329,8 @@ class RestServer
 	{
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 		// remove root from path
-		if ($this->root) $path = preg_replace('/^' . preg_quote($this->root, '/') . '/', '', $path);
-		// remove trailing format definition, like /controller/action.json -> /controller/action
-		$path = preg_replace('/\.(\w+)$/i', '', $path);
+		if ($this->root) 
+			$path = preg_replace('/^' . preg_quote($this->root, '/') . '/', '', $path);
 		return $path;
 	}
 	

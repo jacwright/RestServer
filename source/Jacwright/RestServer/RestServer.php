@@ -50,6 +50,7 @@ class RestServer
 	public $realm;
 	public $mode;
 	public $root;
+	public $rootPath;
 	
 	protected $map = array();
 	protected $errorClasses = array();
@@ -150,6 +151,12 @@ class RestServer
 			$this->handleError(404);
 		}
 	}
+
+        public function setRootPath($path)
+        {
+
+                $this->rootPath = '/'.trim($path, '/').'/';
+        }
 
 	public function addClass($class, $basePath = '')
 	{
@@ -332,6 +339,8 @@ class RestServer
 		if ($this->root) $path = preg_replace('/^' . preg_quote($this->root, '/') . '/', '', $path);
 		// remove trailing format definition, like /controller/action.json -> /controller/action
 		$path = preg_replace('/\.(\w+)$/i', '', $path);
+		// remove root path from path, like /root/path/api -> /api
+		$path = str_replace($this->rootPath, '', $path);	
 		return $path;
 	}
 	

@@ -340,7 +340,7 @@ class RestServer
 		// remove trailing format definition, like /controller/action.json -> /controller/action
 		$path = preg_replace('/\.(\w+)$/i', '', $path);
 		// remove root path from path, like /root/path/api -> /api
-		$path = str_replace($this->rootPath, '', $path);	
+		if ($this->rootPath) $path = str_replace($this->rootPath, '', $path);	
 		return $path;
 	}
 	

@@ -394,7 +394,7 @@ class RestServer
 	public function getData()
 	{
 		$data = file_get_contents('php://input');
-		$data = json_decode($data, $jsonAssoc);
+		$data = json_decode($data, $this->jsonAssoc);
 
 		return $data;
 	}

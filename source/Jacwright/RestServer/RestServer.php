@@ -65,15 +65,20 @@ class RestServer
 		$this->mode = $mode;
 		$this->realm = $realm;
 		// Set the root
-		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
-		if ($dir == '.') {
-			$dir = '/';
-		} else {
-			// add a slash at the beginning and end
-			if (substr($dir, -1) != '/') $dir .= '/';
-			if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
+		if($root == null) {
+			$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+			if ($dir == '.') {
+				$dir = '/';
+			} else {
+				// add a slash at the beginning and end
+				if (substr($dir, -1) != '/') $dir .= '/';
+				if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
+			}
+			$this->root = $dir;
 		}
-		$this->root = $dir;
+		else {
+			$this->root = $root;
+		}
 	}
 	
 	public function  __destruct()
@@ -350,7 +355,10 @@ class RestServer
 	public function getFormat()
 	{
 		$format = RestFormat::PLAIN;
-		$accept_mod = preg_replace('/\s+/i', '', $_SERVER['HTTP_ACCEPT']); // ensures that exploding the HTTP_ACCEPT string does not get confused by whitespaces
+		$accept_mod = null;
+		if(isset($_SERVER["HTTP_ACCEPT"])) {
+			$accept_mod = preg_replace('/\s+/i', '', $_SERVER['HTTP_ACCEPT']); // ensures that exploding the HTTP_ACCEPT string does not get confused by whitespaces
+		}
 		$accept = explode(',', $accept_mod);
 		$override = '';
 

@@ -51,6 +51,7 @@ class RestServer
 	public $mode;
 	public $root;
 	public $rootPath;
+	public $jsonAssoc = false;
 
 	protected $map = array();
 	protected $errorClasses = array();
@@ -154,6 +155,10 @@ class RestServer
 	public function setRootPath($path)
 	{
 		$this->rootPath = '/'.trim($path, '/').'/';
+	}
+	public function setJsonAssoc($value)
+	{
+		$this->jsonAssoc = ($value === true);
 	}
 
 	public function addClass($class, $basePath = '')
@@ -389,7 +394,7 @@ class RestServer
 	public function getData()
 	{
 		$data = file_get_contents('php://input');
-		$data = json_decode($data);
+		$data = json_decode($data, $jsonAssoc);
 
 		return $data;
 	}

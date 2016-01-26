@@ -68,6 +68,7 @@ class RestServer
 		// Set the root
 		if($root == null) {
 			$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+			$dir =  str_replace('\\', '/', $dir);
 			if ($dir == '.') {
 				$dir = '/';
 			} else {

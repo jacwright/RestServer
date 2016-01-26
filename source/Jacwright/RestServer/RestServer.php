@@ -66,20 +66,15 @@ class RestServer
 		$this->mode = $mode;
 		$this->realm = $realm;
 		// Set the root
-		if($root == null) {
-			$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
-			if ($dir == '.') {
-				$dir = '/';
-			} else {
-				// add a slash at the beginning and end
-				if (substr($dir, -1) != '/') $dir .= '/';
-				if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
-			}
-			$this->root = $dir;
+		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+		if ($dir == '.') {
+			$dir = '/';
+		} else {
+			// add a slash at the beginning and end
+			if (substr($dir, -1) != '/') $dir .= '/';
+			if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
 		}
-		else {
-			$this->root = $root;
-		}
+		$this->root = $dir;
 	}
 	
 	public function  __destruct()
@@ -156,12 +151,10 @@ class RestServer
 			$this->handleError(404);
 		}
 	}
-
-        public function setRootPath($path)
-        {
-
-                $this->rootPath = '/'.trim($path, '/').'/';
-        }
+	public function setRootPath($path)
+	{
+		$this->rootPath = '/'.trim($path, '/').'/';
+	}
 
 	public function addClass($class, $basePath = '')
 	{

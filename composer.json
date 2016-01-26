@@ -1,6 +1,6 @@
 {
     "name": "jacwright/restserver",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "library",
     "description": "php rest server for very light-weight REST APIs",
     "keywords": ["php", "rest", "rest-server", "light-weight", "http", "json", "mit"],

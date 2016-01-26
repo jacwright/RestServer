@@ -1,3 +1,5 @@
+## Jacwright RESTServer v1.0.0
+
 A PHP REST server for providing a very light-weight REST API. Very easy to set up and get going. Independent from other libraries and frameworks. Supports HTTP authentication.
 
 ## Simple REST server in PHP
@@ -161,11 +163,11 @@ You may provide errors to your API users easily by throwing an excetion with the
     {
         if ($id) {
             $user = User::load($id); // possible user loading method
-            
+
             if (!$user) {
                 throw new RestException(404, 'User not found');
             }
-            
+
         } else {
             $user = $_SESSION['user'];
         }

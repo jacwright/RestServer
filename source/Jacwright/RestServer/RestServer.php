@@ -377,7 +377,7 @@ class RestServer
 		}
 
 		// Check for trailing dot-format syntax like /controller/action.format -> action.json
-		if(preg_match('/\.(\w+)$/i', $_SERVER['REQUEST_URI'], $matches)) {
+		if(preg_match('/\.(\w+)$/i', strtok($_SERVER["REQUEST_URI"],'?'), $matches)) {
 			$override = $matches[1];
 		}
 

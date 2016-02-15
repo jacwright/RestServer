@@ -67,7 +67,7 @@ class RestServer
 		$this->mode = $mode;
 		$this->realm = $realm;
 		// Set the root
-		$dir = dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']));
+		$dir = str_replace('\\', '/', dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME'])));
 		if ($dir == '.') {
 			$dir = '/';
 		} else {

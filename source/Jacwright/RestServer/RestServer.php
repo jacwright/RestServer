@@ -209,10 +209,13 @@ class RestServer
 			}
 		}
 
-		$message = $this->codes[$statusCode] . ($errorMessage && $this->mode == 'debug' ? ': ' . $errorMessage : '');
+		if (!$errorMessage)
+		{
+			$errorMessage = $this->codes[$statusCode];
+		}
 
 		$this->setStatus($statusCode);
-		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $message)));
+		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
 	}
 
 	protected function loadCache()

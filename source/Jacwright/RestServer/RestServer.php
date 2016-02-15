@@ -257,7 +257,7 @@ class RestServer
 						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
 						$call[2] = $params;
 					} else {
-						$call[2] = [];
+						$call[2] = array();
 					}
 					return $call;
 				}

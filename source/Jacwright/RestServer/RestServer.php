@@ -426,6 +426,7 @@ class RestServer
 			if ($this->mode == 'debug') {
 				$options = JSON_PRETTY_PRINT;
 			}
+			$options = $options | JSON_UNESCAPED_UNICODE;
 			echo json_encode($data, $options);
 		}
 	}

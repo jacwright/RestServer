@@ -358,7 +358,7 @@ class RestServer
 			$method = 'PUT';
 		} elseif ($method == 'POST' && strtoupper($override) == 'DELETE') {
 			$method = 'DELETE';
-		} elseif ($method == 'PATCH' && strtoupper($override) == 'PATCH') {
+		} elseif ($method == 'POST' && strtoupper($override) == 'PATCH') {
             $method = 'PATCH';
         }
 		return $method;

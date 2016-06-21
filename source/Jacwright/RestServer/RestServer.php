@@ -110,7 +110,7 @@ class RestServer
 		$this->method = $this->getMethod();
 		$this->format = $this->getFormat();
 
-		if ($this->method == 'PUT' || $this->method == 'POST') {
+		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
 			$this->data = $this->getData();
 		}
 
@@ -313,7 +313,7 @@ class RestServer
 		foreach ($methods as $method) {
 			$doc = $method->getDocComment();
 			$noAuth = strpos($doc, '@noAuth') !== false;
-			if (preg_match_all('/@url[ \t]+(GET|POST|PUT|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
+			if (preg_match_all('/@url[ \t]+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
 
 				$params = $method->getParameters();
 
@@ -358,7 +358,9 @@ class RestServer
 			$method = 'PUT';
 		} elseif ($method == 'POST' && strtoupper($override) == 'DELETE') {
 			$method = 'DELETE';
-		}
+		} elseif ($method == 'POST' && strtoupper($override) == 'PATCH') {
+            $method = 'PATCH';
+        }
 		return $method;
 	}
 

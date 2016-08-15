@@ -27,7 +27,7 @@ class TestController
     {
         return "Hello World";
     }
-
+   
     /**
      * Logs in a user with the given username and password POSTed. Though true
      * REST doesn't believe in sessions, it is often desirable for an AJAX server.
@@ -71,6 +71,21 @@ class TestController
         $user = User::saveUser($data); // saving the user to the database
         return $user; // returning the updated or newly created user object
     }
+
+   /**
+     * Returns a JSON array containing all arguments passed as URL. If you pass "test" argument it will be set to what 
+     * you defined else it will be set to "default_value", this is same on "bool" argument where default value is "true"
+     *
+     * @url GET /wa
+     * @url GET /wa/$par1
+     *
+     * @param test "Sample argument passed by URL Query" "default_value"
+     * @param bool "Sample boolean argument" true
+     */
+    public function testWithArg($par1 = null, $args = null)
+    {
+        return array($par1, $args);
+    }
 }
 ```
 
@@ -102,6 +117,19 @@ but POSTing a new user object for our saveUser method could look like this:
 
 So you’re able to allow POSTing JSON in addition to regular web style POSTs.
 
+Last method is `testWithArg`, where you’ll notice there is a new kind of doc-comment tag in the docblock. `@param` maps a URL query to the method below it and is in the form:
+
+`@param <NAME> <DEFINITION> <DEFAULT_VALUE>`
+
+All parameters passed to the URL as URL query will be stored in `$args` parameter but the two predefined parameters named `test` and `bool` will be set to their defined default value if not set when calling. for example requesting GET on http://www.example.com/wa?test=Sample%20text&extra=1  will set `test` equal to "Sample%20text" and let `bool` equal to true. So `$args` will be:
+```php 
+    array(
+        [test] => Sample text,
+        [bool] => true,
+        [extra] => 1
+    )
+```
+
 I call these classes that handle the requests `Controllers`. And they can be completely self-contained with their URL mappings, database configs, etc. so that you could drop them into other RestServer services without any hassle.
 
 ### REST index.php
@@ -116,7 +144,7 @@ $server = new RestServer($mode);
 // $server->refreshCache(); // uncomment momentarily to clear the cache if classes change in production mode
 
 $server->addClass('TestController');
-$server->addClass('ProductsController', '/products'); // adds this as a base to all the URLs in this class
+$server->addClass('ProductsController', '/products',); // adds this as a base to all the URLs in this class
 
 $server->handle();
 ```

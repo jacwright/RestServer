@@ -13,6 +13,21 @@ class TestController
     {
         return "Hello World";
     }
+    
+    /**
+     * Returns a JSON array containing all arguments passed as URL Query. If you pass "test" argument it will be set to what 
+     * you defined else it eill be set to "default_value"
+     *
+     * @url GET /wa
+     * 
+     * @param test "Sample argument passed by URL Query" "default_value"
+     * @param bool "Sample boolean argument" true
+     */
+    public function testWithArg($args = NULL)
+    {
+        return $args;
+    }
+    
 
     /**
      * Logs in a user with the given username and password POSTed. Though true

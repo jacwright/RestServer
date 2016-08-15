@@ -19,11 +19,12 @@ class TestController
      * you defined else it eill be set to "default_value"
      *
      * @url GET /wa
+     * @url GET /wa/$par1
      * 
      * @param test "Sample argument passed by URL Query" "default_value"
      * @param bool "Sample boolean argument" true
      */
-    public function testWithArg($args = NULL)
+    public function testWithArg($par1 = null, $args = NULL)
     {
         return $args;
     }

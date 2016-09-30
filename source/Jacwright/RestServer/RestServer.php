@@ -117,26 +117,21 @@ class RestServer
 		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();
 
 		if ($obj) {
-			if (is_string($obj)) {
-				if (class_exists($obj)) {
-					$obj = new $obj();
-				} else {
+				
+			if (is_string($obj) && !($newObj = $this->instantiateClass($obj))) {
 					throw new Exception("Class $obj does not exist");
 				}
-			}
-
+				
+			$obj = $newObj;
 			$obj->server = $this;
 
 			try {
-				if (method_exists($obj, 'init')) {
-					$obj->init();
-				}
 
-				if (!$noAuth && method_exists($obj, 'authorize')) {
-					if (!$obj->authorize()) {
+				$this->initClass($obj);
+
+				if (!$noAuth && !$this->isAuthorizedByClass($obj)) {
 						$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
 						exit;
-					}
 				}
 
 				$result = call_user_func_array(array($obj, $method), $params);
@@ -218,6 +213,30 @@ class RestServer
 		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
 	}
 
+	
+	protected function instantiateClass($obj) 
+	{
+		if (class_exists($obj)) {
+			return new $obj();
+		}
+		return false;
+	}
+	
+	protected function initClass($obj) 
+	{
+		if (method_exists($obj, 'init')) {
+			$obj->init();
+		}
+	}
+	
+	protected function isAuthorizedByClass($obj) 
+	{
+		if (method_exists($obj, 'authorize')) {
+			return $obj->authorize();
+		}
+		return true;
+	}
+	
 	protected function loadCache()
 	{
 		if ($this->cached !== null) {

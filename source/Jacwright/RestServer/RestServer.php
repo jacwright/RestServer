@@ -428,10 +428,14 @@ class RestServer
 				}
 			}
 			$options = 0;
-			if ($this->mode == 'debug') {
+			if ($this->mode == 'debug' && defined('JSON_PRETTY_PRINT')) {
 				$options = JSON_PRETTY_PRINT;
 			}
-			$options = $options | JSON_UNESCAPED_UNICODE;
+
+			if (defined('JSON_UNESCAPED_UNICODE')) {
+				$options = $options | JSON_UNESCAPED_UNICODE;
+			}
+
 			echo json_encode($data, $options);
 		}
 	}

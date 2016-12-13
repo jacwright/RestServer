@@ -103,6 +103,10 @@ class RestServer
 		throw new RestException(401, "You are not authorized to access this resource.");
 	}
 
+	public function options()
+	{
+		throw new RestException(200, "authorized");
+	}
 
 	public function handle()
 	{
@@ -112,6 +116,11 @@ class RestServer
 
 		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
 			$this->data = $this->getData();
+		}
+
+		//preflight requests response 
+		if($this->method == 'OPTIONS' && getallheaders()['Access-Control-Request-Headers']){
+			$this->sendData($this->options());
 		}
 
 		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();

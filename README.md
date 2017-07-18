@@ -1,5 +1,3 @@
-*Looking for a maintainer. If you use the project regularly and would be interested in maintaining it, please email me.*
-
 ## Jacwright RESTServer v1.0.1
 
 A PHP REST server for providing a very light-weight REST API. Very easy to set up and get going. Independent from other libraries and frameworks. Supports HTTP authentication.

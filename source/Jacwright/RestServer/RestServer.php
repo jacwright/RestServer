@@ -117,21 +117,19 @@ class RestServer
 		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();
 
 		if ($obj) {
-				
 			if (is_string($obj) && !($newObj = $this->instantiateClass($obj))) {
-					throw new Exception("Class $obj does not exist");
-				}
-				
+				throw new Exception("Class $obj does not exist");
+			}
+
 			$obj = $newObj;
 			$obj->server = $this;
 
 			try {
-
 				$this->initClass($obj);
 
 				if (!$noAuth && !$this->isAuthorizedByClass($obj)) {
-						$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
-						exit;
+					$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
+					exit;
 				}
 
 				$result = call_user_func_array(array($obj, $method), $params);
@@ -213,12 +211,12 @@ class RestServer
 		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
 	}
 
-	
 	protected function instantiateClass($obj) 
 	{
 		if (class_exists($obj)) {
 			return new $obj();
 		}
+
 		return false;
 	}
 	
@@ -234,6 +232,7 @@ class RestServer
 		if (method_exists($obj, 'authorize')) {
 			return $obj->authorize();
 		}
+
 		return true;
 	}
 	

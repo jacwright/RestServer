@@ -274,54 +274,56 @@ class RestServer
 
 	protected function findUrl()
 	{
-		$urls = $this->map[$this->method];
-		if (!$urls) return null;
+		if ($this->map[$this->method]) {
+			$urls = $this->map[$this->method];
+			if (!$urls) return null;
 
-		foreach ($urls as $url => $call) {
-			$args = $call[2];
+			foreach ($urls as $url => $call) {
+				$args = $call[2];
 
-			if (!strstr($url, '$')) {
-				if ($url == $this->url) {
-					if (isset($args['data'])) {
-						$params = array_fill(0, $args['data'] + 1, null);
-						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
+				if (!strstr($url, '$')) {
+					if ($url == $this->url) {
+						if (isset($args['data'])) {
+							$params = array_fill(0, $args['data'] + 1, null);
+							$params[$args['data']] = $this->data;   //@todo data is not a property of this class
+							$call[2] = $params;
+						} else {
+							$call[2] = array();
+						}
+						return $call;
+					}
+				} else {
+					$regex = preg_replace('/\\\\\$([\w\d]+)\.\.\./', '(?P<$1>.+)', str_replace('\.\.\.', '...', preg_quote($url)));
+					$regex = preg_replace('/\\\\\$([\w\d]+)/', '(?P<$1>[^\/]+)', $regex);
+					if (preg_match(":^$regex$:", urldecode($this->url), $matches)) {
+						$params = array();
+						$paramMap = array();
+						if (isset($args['data'])) {
+							$params[$args['data']] = $this->data;
+						}
+
+						foreach ($matches as $arg => $match) {
+							if (is_numeric($arg)) continue;
+							$paramMap[$arg] = $match;
+
+							if (isset($args[$arg])) {
+								$params[$args[$arg]] = $match;
+							}
+						}
+						ksort($params);
+						// make sure we have all the params we need
+						end($params);
+						$max = key($params);
+						for ($i = 0; $i < $max; $i++) {
+							if (!array_key_exists($i, $params)) {
+								$params[$i] = null;
+							}
+						}
+						ksort($params);
 						$call[2] = $params;
-					} else {
-						$call[2] = array();
+						$call[3] = $paramMap;
+						return $call;
 					}
-					return $call;
-				}
-			} else {
-				$regex = preg_replace('/\\\\\$([\w\d]+)\.\.\./', '(?P<$1>.+)', str_replace('\.\.\.', '...', preg_quote($url)));
-				$regex = preg_replace('/\\\\\$([\w\d]+)/', '(?P<$1>[^\/]+)', $regex);
-				if (preg_match(":^$regex$:", urldecode($this->url), $matches)) {
-					$params = array();
-					$paramMap = array();
-					if (isset($args['data'])) {
-						$params[$args['data']] = $this->data;
-					}
-
-					foreach ($matches as $arg => $match) {
-						if (is_numeric($arg)) continue;
-						$paramMap[$arg] = $match;
-
-						if (isset($args[$arg])) {
-							$params[$args[$arg]] = $match;
-						}
-					}
-					ksort($params);
-					// make sure we have all the params we need
-					end($params);
-					$max = key($params);
-					for ($i = 0; $i < $max; $i++) {
-						if (!array_key_exists($i, $params)) {
-							$params[$i] = null;
-						}
-					}
-					ksort($params);
-					$call[2] = $params;
-					$call[3] = $paramMap;
-					return $call;
 				}
 			}
 		}

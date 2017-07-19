@@ -1,0 +1,109 @@
+body, html {
+	padding:0px;
+	margin:0px;
+	color:#000;
+	background-color:#eee;
+	font-size:12px;
+	font-family: Verdana,Geneva,sans-serif;
+}
+
+h1, h2, h3, h4 {
+	font-family: Arial,sans-serif;
+}
+
+header {
+	margin:0px;
+	padding:15px;
+	background-color:#222;
+	color:#fff;
+	border-bottom: 4px solid #6af;
+}
+
+header h1 {
+	margin:0px;
+	padding:0px;
+}
+
+div.apimethods {
+	background-color:#fff;
+	padding: 15px;
+	margin: 15px 15px 0px;
+	border-radius:10px;
+	border: 1px solid #aaa;
+}
+
+div.method {
+	margin-top:15px;
+	padding:15px;
+	border-radius:10px;
+	border: 1px solid #aaa;
+	background-color:#dcf;
+	border-color:#96f;
+}
+
+div.method:first-child {
+	margin:0px;
+}
+
+div.method h2.methodtype {
+	margin: -15px -15px 0px;
+	border-radius:10px 10px 0px 0px;
+	padding:15px;
+	background-color:#baf;
+}
+
+div.method h2.methodtype a {
+	color:rgba(0,0,0,.7);
+	text-decoration: none;
+}
+
+div.method div.endpoint h2 a {
+	color:rgba(0,0,0,.7);
+	text-decoration: none;
+}
+
+div.method.method-GET {
+	background-color: #cef;
+	border-color: #68f;
+}
+
+div.method.method-GET h2.methodtype {
+	background-color:#8cf;
+}
+
+div.method.method-POST {
+	background-color: #fca;
+	border-color: #f90;
+}
+
+div.method.method-POST h2.methodtype {
+	background-color:#fb7;
+}
+
+div.endpoint {
+	border-left: 1px solid rgba(0, 0, 0, .4);
+	border-radius:10px;
+	padding:15px 0px 15px 15px;
+	margin-top:15px;
+}
+
+div.endpointinfo {
+	display: table-row;
+}
+
+div.endpointinfo .docname, div.endpointinfo .docstring {
+	display: table-cell;
+	padding:2px 10px;
+}
+
+div.endpointinfo .docname {
+	padding-left: 0px;
+}
+
+div.endpointinfo .docstring {
+	padding-right:0px;
+}
+
+div.endpoint h2{
+	margin-top:0px;
+}

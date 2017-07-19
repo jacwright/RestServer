@@ -103,6 +103,16 @@ class RestServer
 		throw new RestException(401, "You are not authorized to access this resource.");
 	}
 
+	public function docs($apibase = '/')
+	{
+		$this->url = $this->getPath();
+		if (substr($apibase, -1) !== '/') {
+			$apibase .= '/';
+		}
+
+		$dg = new apidocs\DocumentationGenerator($this->map, $apibase);
+		$dg->render($this->url);
+	}
 
 	public function handle()
 	{
@@ -114,12 +124,13 @@ class RestServer
 			$this->data = $this->getData();
 		}
 
-		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();
+		$call = $this->findUrl();
+		$this->params = $call['paramMap'];
 
-		if ($obj) {
-			if (is_string($obj)) {
-				if (class_exists($obj)) {
-					$obj = new $obj();
+		if ($call['class']) {
+			if (is_string($call['class'])) {
+				if (class_exists($call['class'])) {
+					$obj = new $call['class']();
 				} else {
 					throw new Exception("Class $obj does not exist");
 				}
@@ -132,14 +143,14 @@ class RestServer
 					$obj->init();
 				}
 
-				if (!$noAuth && method_exists($obj, 'authorize')) {
+				if (!$call['noAuth'] && method_exists($obj, 'authorize')) {
 					if (!$obj->authorize()) {
 						$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
 						exit;
 					}
 				}
 
-				$result = call_user_func_array(array($obj, $method), $params);
+				$result = call_user_func_array(array($obj, $call['methodName']), $call['params']);
 
 				if ($result !== null) {
 					$this->sendData($result);
@@ -251,16 +262,16 @@ class RestServer
 		if (!$urls) return null;
 
 		foreach ($urls as $url => $call) {
-			$args = $call[2];
+			$args = $call['args'];
 
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
 					if (isset($args['data'])) {
 						$params = array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
-						$call[2] = $params;
+						$call['params'] = $params;
 					} else {
-						$call[2] = array();
+						$call['params'] = array();
 					}
 					return $call;
 				}
@@ -292,8 +303,8 @@ class RestServer
 						}
 					}
 					ksort($params);
-					$call[2] = $params;
-					$call[3] = $paramMap;
+					$call['params'] = $params;
+					$call['paramMap'] = $paramMap;
 					return $call;
 				}
 			}
@@ -302,13 +313,18 @@ class RestServer
 
 	protected function generateMap($class, $basePath)
 	{
+		$reflection = null;
 		if (is_object($class)) {
 			$reflection = new ReflectionObject($class);
 		} elseif (class_exists($class)) {
 			$reflection = new ReflectionClass($class);
 		}
 
-		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);    //@todo $reflection might not be instantiated
+		if (is_null($reflection)) {
+			throw new InvalidArgumentException("Provided class '{$class}' does not exist.");
+		}
+
+		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
 		foreach ($methods as $method) {
 			$doc = $method->getDocComment();
@@ -323,14 +339,63 @@ class RestServer
 					if ($url && $url[strlen($url) - 1] == '/') {
 						$url = substr($url, 0, -1);
 					}
-					$call = array($class, $method->getName());
+
 					$args = array();
 					foreach ($params as $param) {
 						$args[$param->getName()] = $param->getPosition();
 					}
-					$call[] = $args;
-					$call[] = null;
-					$call[] = $noAuth;
+
+					// Generate Documentation
+
+					/*
+					 * Format comment in a form that we can parse easily
+					 *
+					 * Takes a string in the form of
+					 *     "/**
+					 *         * Example Method
+					 *         * @name Example
+					 *         * @description An exemplary method.
+					 *         * @param string $example - An example parameter.
+					 *         *     This example parameter spans
+					 *         *     multiple lines.
+					 *         * /"
+					 *
+					 * And converts it to (newlines added for clarity, the actual string does not include newlines)
+					 *     "Example Method@name Example@description An exemplary method.@param string
+					 *          $example - An example parameter. This example parameter spans multiple lines."
+					 *
+					 * We can then explode on '@' to yield:
+					 *    [
+					 *        0 => "Example Method",
+					 *        1 => "description An exemplary method.",
+					 *        2 => "param string $example - An example parameter. This example parameter spans multiple lines."
+					 *    ]
+					 *
+					 * After which, we can ignore the first element to get our docstring.
+					 */
+					$docstring = preg_replace("/(((^|\n)[ \t]*(\/|\*)+)|(\s*(?=(\s|@))))/", "", $doc);
+					$docarr = array_slice(explode("@", $docstring), 1);
+
+					foreach ($docarr as $key => $atstring) {
+						list($docpart, $atstring) = explode(' ', $atstring, 2);
+
+						if (array_key_exists($docpart, $docarr)) {
+							if (!is_array($docarr[$docpart])) $docarr[$docpart] = array($docarr[$docpart]);
+
+							$docarr[$docpart][] = $atstring;
+						} else {
+							$docarr[$docpart] = $atstring;
+						}
+
+						unset($docarr[$key]);
+					}
+
+					$call = array();
+					$call['class'] = $class;
+					$call['methodName'] = $method->getName();
+					$call['args'] = $args;
+					$call['noAuth'] = $noAuth;
+					$call['docs'] = $docarr;
 
 					$this->map[$httpMethod][$url] = $call;
 				}

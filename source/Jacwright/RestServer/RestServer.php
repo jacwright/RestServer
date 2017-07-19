@@ -381,7 +381,7 @@ class RestServer
 		// remove root path from path, like /root/path/api -> /api
 		if ($this->rootPath) $path = str_replace($this->rootPath, '', $path);
 
-		return $path;
+		return ltrim($path, '/');
 	}
 
 	public function getMethod()

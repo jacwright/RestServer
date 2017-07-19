@@ -119,7 +119,7 @@ class RestServer
 		}
 
 		//preflight requests response 
-		if($this->method == 'OPTIONS' && getallheaders()['Access-Control-Request-Headers']){
+		if($this->method == 'OPTIONS' && getallheaders()->Access-Control-Request-Headers){
 			$this->sendData($this->options());
 		}
 
@@ -380,6 +380,7 @@ class RestServer
 
 		// remove root path from path, like /root/path/api -> /api
 		if ($this->rootPath) $path = str_replace($this->rootPath, '', $path);
+
 		return $path;
 	}
 

@@ -71,8 +71,8 @@ class RestServer {
 		if ($dir == '.') {
 			$dir = '/';
 		} else {
-			// add a slash at the beginning and end
-			if (substr($dir, -1) != '/') $dir .= '/';
+			// add a slash at the beginning, and remove the one at the end
+			if (substr($dir, -1) == '/') $dir = substr($dir, 0, -1);
 			if (substr($dir, 0, 1) != '/') $dir = '/' . $dir;
 		}
 
@@ -152,7 +152,7 @@ class RestServer {
 	}
 
 	public function setRootPath($path) {
-		$this->rootPath = '/'.trim($path, '/').'/';
+		$this->rootPath = '/' . trim($path, '/');
 	}
 
 	public function setJsonAssoc($value) {
@@ -371,9 +371,6 @@ class RestServer {
 
 		// remove trailing format definition, like /controller/action.json -> /controller/action
 		$path = preg_replace('/\.(\w+)$/i', '', $path);
-
-		// Re-add leading slash, if stripped earlier. Fixes bug #80 and allows rootPath not to interfere with the class path
-		$path = '/' . ltrim($path, '/');
 
 		// remove root path from path, like /root/path/api -> /api
 		if ($this->rootPath) $path = str_replace($this->rootPath, '', $path);

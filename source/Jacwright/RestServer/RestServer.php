@@ -370,7 +370,18 @@ class RestServer {
 		if ($this->root) $path = preg_replace('/^' . preg_quote($this->root, '/') . '/', '', $path);
 
 		// remove trailing format definition, like /controller/action.json -> /controller/action
-		$path = preg_replace('/\.(\w+)$/i', '', $path);
+		// Only remove formats that are valid for RestServer
+		$dot = strrpos($path, '.');
+		if ($dot !== false) {
+			$path_format = substr($path, $dot + 1);
+
+			foreach (RestFormat::$formats as $format => $mimetype) {
+				if ($path_format == $format) {
+					$path = substr($path, 0, $dot);
+					break;
+				}
+			}
+		}
 
 		// remove root path from path, like /root/path/api -> /api
 		if ($this->rootPath) $path = str_replace($this->rootPath, '', $path);
@@ -441,8 +452,7 @@ class RestServer {
 		header('Content-Type: ' . $this->format);
 
 		if ($this->format == RestFormat::XML) {
-
-		if (is_object($data) && method_exists($data, '__keepOut')) {
+			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
 				foreach ($data->__keepOut() as $prop) {
 					unset($data->$prop);

@@ -487,6 +487,8 @@ class RestServer {
 			$DOMDocument->formatOutput = true;
 			$this->xml_encode($mixed, $DOMDocument, $DOMDocument);
 			echo $DOMDocument->saveXML();
+		} else if (empty($mixed)) {
+			$domElement->appendChild($DOMDocument->createTextNode(null));
 		} else if (is_array($mixed)) {
 			foreach ($mixed as $index => $mixedElement) {
 				if (is_int($index)) {
@@ -501,7 +503,7 @@ class RestServer {
 					$domElement->appendChild($plural);
 					$node = $plural;
 
-					if (!(rtrim($index, 's') === $index)) {
+					if (!(rtrim($index, 's') === $index) && !empty($mixedElement)) {
 						$singular = $DOMDocument->createElement(rtrim($index, 's'));
 						$plural->appendChild($singular);
 						$node = $singular;

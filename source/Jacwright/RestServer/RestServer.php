@@ -497,7 +497,7 @@ class RestServer {
 			$DOMDocument->formatOutput = true;
 			$this->xml_encode($mixed, $DOMDocument, $DOMDocument);
 			echo $DOMDocument->saveXML();
-		} else if (empty($mixed)) {
+		} else if (is_null($mixed) || $mixed === false || (is_array($mixed) && empty($mixed))) {
 			$domElement->appendChild($DOMDocument->createTextNode(null));
 		} else if (is_array($mixed)) {
 			foreach ($mixed as $index => $mixedElement) {

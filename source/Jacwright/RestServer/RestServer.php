@@ -46,11 +46,11 @@ class RestServer {
 	public $params;
 	public $format;
 	public $cacheDir = __DIR__;
-	public $realm;
 	public $mode;
 	public $root;
 	public $rootPath;
 	public $jsonAssoc = false;
+	public $authHandler = null;
 
 	protected $map = array();
 	protected $errorClasses = array();
@@ -61,9 +61,8 @@ class RestServer {
 	 *
 	 * @param string $mode The mode, either debug or production
 	 */
-	public function  __construct($mode = 'debug', $realm = 'Rest Server') {
+	public function  __construct($mode = 'debug') {
 		$this->mode = $mode;
-		$this->realm = $realm;
 
 		// Set the root
 		$dir = str_replace('\\', '/', dirname(str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME'])));
@@ -77,6 +76,9 @@ class RestServer {
 		}
 
 		$this->root = $dir;
+
+		// For backwards compatability, register HTTPAuthServer
+		$this->setAuthHandler(new \Jacwright\RestServer\Auth\HTTPAuthServer);
 	}
 
 	public function  __destruct() {
@@ -89,17 +91,15 @@ class RestServer {
 		}
 	}
 
+	public function setAuthHandler($authHandler) {
+		if ($authHandler instanceof AuthServer) {
+			$this->authHandler = $authHandler;
+		}
+	}
+
 	public function refreshCache() {
 		$this->map = array();
 		$this->cached = false;
-	}
-
-	public function unauthorized($ask = false) {
-		if ($ask) {
-			header("WWW-Authenticate: Basic realm=\"$this->realm\"");
-		}
-
-		throw new RestException(401, "You are not authorized to access this resource.");
 	}
 
 	public function options() {
@@ -133,15 +133,15 @@ class RestServer {
 			try {
 				$this->initClass($obj);
 
-				if (!$noAuth && !$this->isAuthorizedByClass($obj)) {
-					$this->sendData($this->unauthorized(true)); //@todo unauthorized returns void
-					exit;
-				}
+				if (!$noAuth && !$this->isAuthorized($obj)) {
+					$data = $this->unauthorized($obj);
+					$this->sendData($data);
+				} else {
+					$result = call_user_func_array(array($obj, $method), $params);
 
-				$result = call_user_func_array(array($obj, $method), $params);
-
-				if ($result !== null) {
-					$this->sendData($result);
+					if ($result !== null) {
+						$this->sendData($result);
+					}
 				}
 			} catch (RestException $e) {
 				$this->handleError($e->getCode(), $e->getMessage());
@@ -225,15 +225,23 @@ class RestServer {
 			$obj->init();
 		}
 	}
-	
-	protected function isAuthorizedByClass($obj) {
-		if (method_exists($obj, 'authorize')) {
-			return $obj->authorize();
+
+	protected function unauthorized($obj) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->unauthorized($obj);
+		}
+
+		throw new RestException(401, "You are not authorized to access this resource.");
+	}
+
+	protected function isAuthorized($obj) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->isAuthorized($obj);
 		}
 
 		return true;
 	}
-	
+
 	protected function loadCache() {
 		if ($this->cached !== null) {
 			return;

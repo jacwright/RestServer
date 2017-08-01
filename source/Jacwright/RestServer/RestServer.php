@@ -277,7 +277,7 @@ class RestServer {
 			$args = $call[2];
 
 			if (!strstr($url, '$')) {
-				if ($url == $this->url) {
+                if ($url == substr($this->url, -strlen($url))) {
 					if (isset($args['data'])) {
 						$params = array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;   //@todo data is not a property of this class

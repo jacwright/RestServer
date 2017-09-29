@@ -53,6 +53,7 @@ class RestServer {
 	public $authHandler = null;
 
 	public $useCors = false;
+	public $getParamAssoc;
 
 	protected $map = array();
 	protected $errorClasses = array();
@@ -379,6 +380,9 @@ class RestServer {
 	}
 
 	public function getPath() {
+		$getParameters = parse_url ($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+		parse_str($getParameters, $this->getParamAssoc);
+
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 
 		// remove root from path

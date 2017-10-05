@@ -53,7 +53,6 @@ class RestServer {
 	public $authHandler = null;
 
 	public $useCors = false;
-	public $getParamAssoc;
 
 	protected $map = array();
 	protected $errorClasses = array();
@@ -116,9 +115,9 @@ class RestServer {
 
 		if (($this->useCors) && ($this->method == 'OPTIONS')) {
 			$this->corsHeaders();
-			exit;      
+			exit;
 		}
-		
+
 		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
 			$this->data = $this->getData();
 		}
@@ -380,9 +379,6 @@ class RestServer {
 	}
 
 	public function getPath() {
-		$getParameters = parse_url ($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
-		parse_str($getParameters, $this->getParamAssoc);
-
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 
 		// remove root from path
@@ -550,7 +546,7 @@ class RestServer {
 		}
 	}
 
-  private function corsHeaders() {
+	private function corsHeaders() {
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS');
 		header('Access-Control-Allow-Credential: true');

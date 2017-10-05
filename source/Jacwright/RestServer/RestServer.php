@@ -52,6 +52,8 @@ class RestServer {
 	public $jsonAssoc = false;
 	public $authHandler = null;
 
+	public $useCors = false;
+
 	protected $map = array();
 	protected $errorClasses = array();
 	protected $cached;
@@ -110,6 +112,11 @@ class RestServer {
 		$this->url = $this->getPath();
 		$this->method = $this->getMethod();
 		$this->format = $this->getFormat();
+
+		if (($this->useCors) && ($this->method == 'OPTIONS')) {
+			$this->corsHeaders();
+			exit;
+		}
 
 		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
 			$this->data = $this->getData();
@@ -459,6 +466,10 @@ class RestServer {
 		header("Expires: 0");
 		header('Content-Type: ' . $this->format);
 
+		if ($this->useCors) {
+			$this->corsHeaders();
+		}
+		
 		if ($this->format == RestFormat::XML) {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
@@ -535,7 +546,13 @@ class RestServer {
 		}
 	}
 
-
+	private function corsHeaders() {
+		header('Access-Control-Allow-Origin: *');
+		header('Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS');
+		header('Access-Control-Allow-Credential: true');
+		header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, Authorization');
+	}
+	
 	private $codes = array(
 		'100' => 'Continue',
 		'200' => 'OK',

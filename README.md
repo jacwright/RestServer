@@ -71,6 +71,20 @@ class TestController
         $user = User::saveUser($data); // saving the user to the database
         return $user; // returning the updated or newly created user object
     }
+
+    /**
+     * Gets user list
+     *
+     * @url GET /users
+     */
+    public function listUsers($query)
+    {
+        $users = array('Andra Combes', 'Valerie Shirkey', 'Manda Douse', 'Nobuko Fisch', 'Roger Hevey');
+        if (isset($query['search'])) {
+          $users = preg_grep("/$query[search]/i", $users);
+        }
+        return $users; // serializes object into JSON
+    }
 }
 ```
 
@@ -90,7 +104,7 @@ Next we have our `getUser` method (you’ll notice that it doesn’t really matt
 
 One last thing to note in `getUser` is that this method simply returns a `User` object. This gets serialized into JSON (or potentially XML) and printed out for consumption by the application.
 
-Finally we get to `saveUser`. You see here we have multiple URL mappings again. This time they also have different HTTP methods (POST and PUT) for creating and updating a user. The new thing here is the `$data` variable. This is a special keyword parameter that will contain the value of whatever was POSTed or PUT to the server. This is different than your regular web POST in that it doesn’t need to only be name-value pairs, but can be as robust as JSON, sending complex objects. For example, the body of a regular web POST, let’s say the login request, might look like this:
+Next we have to `saveUser`. You see here we have multiple URL mappings again. This time they also have different HTTP methods (POST and PUT) for creating and updating a user. The new thing here is the `$data` variable. This is a special keyword parameter that will contain the value of whatever was POSTed or PUT to the server. This is different than your regular web POST in that it doesn’t need to only be name-value pairs, but can be as robust as JSON, sending complex objects. For example, the body of a regular web POST, let’s say the login request, might look like this:
 
 `username=bob&password=supersecretpassw0rd`
 
@@ -101,6 +115,8 @@ but POSTing a new user object for our saveUser method could look like this:
 ```
 
 So you’re able to allow POSTing JSON in addition to regular web style POSTs.
+
+Finally we get to `listUsers` method. It is simple as `test` method. but `$query` parameter is the new. This special parameter can be used to read query string. and hold query string parameters as associated array. for example if client request this API with url `/users?search=Manda` then `$query` parameter will hold `[search => Manada]`.
 
 I call these classes that handle the requests `Controllers`. And they can be completely self-contained with their URL mappings, database configs, etc. so that you could drop them into other RestServer services without any hassle.
 

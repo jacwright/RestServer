@@ -27,6 +27,8 @@ namespace Jacwright\RestServer;
 
 require(__DIR__ . '/RestFormat.php');
 require(__DIR__ . '/RestException.php');
+require(__DIR__ . '/AuthServer.php');
+require(__DIR__ . '/Auth/HTTPAuthServer.php');
 
 use Exception;
 use ReflectionClass;
@@ -286,14 +288,16 @@ class RestServer {
 
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
+				  $params = array();
 					if (isset($args['data'])) {
-						$params = array_fill(0, $args['data'] + 1, null);
-						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
-						$call[2] = $params;
-					} else {
-						$call[2] = array();
+						$params += array_fill(0, $args['data'] + 1, null);
+						$params[$args['data']] = isset($this->data) ? $this->data : null;   //@todo data is not a property of this class
 					}
-
+					if (isset($args['query'])) {
+						$params += array_fill(0, $args['query'] + 1, null);
+						$params[$args['query']] = isset($this->query) ? $this->query : null;   //@todo query is not a property of this class
+					}
+					$call[2] = $params;
 					return $call;
 				}
 			} else {
@@ -306,6 +310,9 @@ class RestServer {
 
 					if (isset($args['data'])) {
 						$params[$args['data']] = $this->data;
+					}
+					if (isset($args['query'])) {
+						$params[$args['query']] = $this->query;
 					}
 
 					foreach ($matches as $arg => $match) {
@@ -380,6 +387,12 @@ class RestServer {
 	}
 
 	public function getPath() {
+		//@todo should only work with GET method
+		$getParameters = parse_url ($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+		if (!empty($getParameters)) {
+			parse_str($getParameters, $this->query);
+		}
+
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 
 		// remove root from path

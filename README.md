@@ -148,6 +148,23 @@ Inside your authentication method you can use PHP's [`getallheaders`](http://php
 
 RestServer is meant to be a simple mechanism to map your application into a REST API. The rest of the details are up to you.
 
+### Cross-origin resource sharing
+
+For security reasons, browsers restrict cross-origin HTTP or REST requests initiated from within scripts. So, a web application using REST APIs from browsers, could only make API requests to its own domain. To override this restriction `RestServer` can be configured to allow cros-orign requests, by including following code in REST index.php file.
+
+```php
+    /**
+     *
+     * include following lines after $server = new RestServer($mode); 
+     */
+     $server->useCors = true;
+     $server->allowedOrigin = 'http://example.com';
+     // or use array of multiple origins
+     $server->allowedOrigin = array('http://example.com', 'https://example.com');
+     // or a wildcard
+     $server->allowedOrigin = '*';
+```
+
 ### Throwing and Handling Errors
 
 You may provide errors to your API users easily by throwing an excetion with the class `RestException`. Example:

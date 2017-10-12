@@ -57,6 +57,8 @@ class RestServer {
 	public $useCors = false;
 	public $allowedOrigin = '*';
 
+  protected $data = null;   // special parameter for post data
+  protected $query = null;  // special parameter for query string
 	protected $map = array();
 	protected $errorClasses = array();
 	protected $cached;
@@ -288,14 +290,14 @@ class RestServer {
 
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
-				  $params = array();
+					$params = array();
 					if (isset($args['data'])) {
 						$params += array_fill(0, $args['data'] + 1, null);
-						$params[$args['data']] = isset($this->data) ? $this->data : null;   //@todo data is not a property of this class
+						$params[$args['data']] = $this->data;
 					}
 					if (isset($args['query'])) {
 						$params += array_fill(0, $args['query'] + 1, null);
-						$params[$args['query']] = isset($this->query) ? $this->query : null;   //@todo query is not a property of this class
+						$params[$args['query']] = $this->query;
 					}
 					$call[2] = $params;
 					return $call;

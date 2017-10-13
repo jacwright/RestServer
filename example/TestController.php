@@ -68,7 +68,7 @@ class TestController
     {
         $users = array('Andra Combes', 'Valerie Shirkey', 'Manda Douse', 'Nobuko Fisch', 'Roger Hevey');
         if (isset($query['search'])) {
-          $users = preg_grep("/$query[search]/i", $users);
+          $users = preg_grep("/{$query[search]}/i", $users);
         }
         return $users; // serializes object into JSON
     }

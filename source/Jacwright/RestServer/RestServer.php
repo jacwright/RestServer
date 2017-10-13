@@ -57,8 +57,8 @@ class RestServer {
 	public $useCors = false;
 	public $allowedOrigin = '*';
 
-  protected $data = null;   // special parameter for post data
-  protected $query = null;  // special parameter for query string
+	protected $data = null;   // special parameter for post data
+	protected $query = null;  // special parameter for query string
 	protected $map = array();
 	protected $errorClasses = array();
 	protected $cached;

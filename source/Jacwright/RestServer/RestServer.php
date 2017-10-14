@@ -390,10 +390,7 @@ class RestServer {
 
 	public function getPath() {
 		//@todo should only work with GET method
-		$getParameters = parse_url ($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
-		if (!empty($getParameters)) {
-			parse_str($getParameters, $this->query);
-		}
+		$this->query = $_GET;
 
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 

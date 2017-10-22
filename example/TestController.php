@@ -60,6 +60,20 @@ class TestController
     }
 
     /**
+     * Gets user list
+     *
+     * @url GET /users
+     */
+    public function listUsers($query)
+    {
+        $users = array('Andra Combes', 'Valerie Shirkey', 'Manda Douse', 'Nobuko Fisch', 'Roger Hevey');
+        if (isset($query['search'])) {
+          $users = preg_grep("/{$query[search]}/i", $users);
+        }
+        return $users; // serializes object into JSON
+    }
+
+    /**
      * Get Charts
      * 
      * @url GET /charts

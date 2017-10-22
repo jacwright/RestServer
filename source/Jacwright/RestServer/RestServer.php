@@ -27,6 +27,8 @@ namespace Jacwright\RestServer;
 
 require(__DIR__ . '/RestFormat.php');
 require(__DIR__ . '/RestException.php');
+require(__DIR__ . '/AuthServer.php');
+require(__DIR__ . '/Auth/HTTPAuthServer.php');
 
 use Exception;
 use ReflectionClass;
@@ -53,7 +55,10 @@ class RestServer {
 	public $authHandler = null;
 
 	public $useCors = false;
+	public $allowedOrigin = '*';
 
+	protected $data = null;   // special parameter for post data
+	protected $query = null;  // special parameter for query string
 	protected $map = array();
 	protected $errorClasses = array();
 	protected $cached;
@@ -285,14 +290,16 @@ class RestServer {
 
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
+					$params = array();
 					if (isset($args['data'])) {
-						$params = array_fill(0, $args['data'] + 1, null);
-						$params[$args['data']] = $this->data;   //@todo data is not a property of this class
-						$call[2] = $params;
-					} else {
-						$call[2] = array();
+						$params += array_fill(0, $args['data'] + 1, null);
+						$params[$args['data']] = $this->data;
 					}
-
+					if (isset($args['query'])) {
+						$params += array_fill(0, $args['query'] + 1, null);
+						$params[$args['query']] = $this->query;
+					}
+					$call[2] = $params;
 					return $call;
 				}
 			} else {
@@ -305,6 +312,9 @@ class RestServer {
 
 					if (isset($args['data'])) {
 						$params[$args['data']] = $this->data;
+					}
+					if (isset($args['query'])) {
+						$params[$args['query']] = $this->query;
 					}
 
 					foreach ($matches as $arg => $match) {
@@ -379,6 +389,9 @@ class RestServer {
 	}
 
 	public function getPath() {
+		//@todo should only work with GET method
+		$this->query = $_GET;
+
 		$path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 
 		// remove root from path
@@ -547,7 +560,13 @@ class RestServer {
 	}
 
 	private function corsHeaders() {
-		header('Access-Control-Allow-Origin: *');
+		$allowedOrigin = (array)$this->allowedOrigin; // to support multiple origins we have to treat origins as array
+		if (in_array('*', $allowedOrigin) || in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigin)) {
+			$allowedOrigin = array($_SERVER['HTTP_ORIGIN']); // array ; if there is a match then only one is enough
+		}
+		foreach($allowedOrigin as $allowed_origin) { // to support multiple origins
+			header("Access-Control-Allow-Origin: $allowed_origin");
+		}
 		header('Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS');
 		header('Access-Control-Allow-Credential: true');
 		header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, Authorization');

@@ -127,7 +127,7 @@ class RestServer {
 			$this->data = $this->getData();
 		}
 
-		//preflight requests response 
+		//preflight requests response
 		if ($this->method == 'OPTIONS' && getallheaders()->Access-Control-Request-Headers) {
 			$this->sendData($this->options());
 		}
@@ -231,7 +231,7 @@ class RestServer {
 
 		return false;
 	}
-	
+
 	protected function initClass($obj) {
 		if (method_exists($obj, 'init')) {
 			$obj->init();
@@ -482,13 +482,17 @@ class RestServer {
 		if ($this->useCors) {
 			$this->corsHeaders();
 		}
-		
+
 		if ($this->format == RestFormat::XML) {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
 				foreach ($data->__keepOut() as $prop) {
 					unset($data->$prop);
 				}
+			}
+
+			if (is_array($data) && count($data) > 1) {
+				$data = array('response' => $data);
 			}
 
 			$this->xml_encode($data);
@@ -571,7 +575,7 @@ class RestServer {
 		header('Access-Control-Allow-Credential: true');
 		header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, Authorization');
 	}
-	
+
 	private $codes = array(
 		'100' => 'Continue',
 		'200' => 'OK',

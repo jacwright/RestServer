@@ -560,9 +560,12 @@ class RestServer {
 	}
 
 	private function corsHeaders() {
-		$allowedOrigin = (array)$this->allowedOrigin; // to support multiple origins we have to treat origins as array
-		if (in_array('*', $allowedOrigin) || in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigin)) {
-			$allowedOrigin = array($_SERVER['HTTP_ORIGIN']); // array ; if there is a match then only one is enough
+		// to support multiple origins we have to treat origins as an array
+		$allowedOrigin = (array)$this->allowedOrigin;
+		// if no origin header is present then requested origin can be anything (i.e *)
+		$currentOrigin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
+		if (in_array($currentOrigin, $allowedOrigin)) {
+			$allowedOrigin = array($currentOrigin); // array ; if there is a match then only one is enough
 		}
 		foreach($allowedOrigin as $allowed_origin) { // to support multiple origins
 			header("Access-Control-Allow-Origin: $allowed_origin");

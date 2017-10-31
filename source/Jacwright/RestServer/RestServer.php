@@ -25,10 +25,10 @@
 
 namespace Jacwright\RestServer;
 
-require(__DIR__ . '/RestFormat.php');
-require(__DIR__ . '/RestException.php');
-require(__DIR__ . '/AuthServer.php');
-require(__DIR__ . '/Auth/HTTPAuthServer.php');
+require_once(__DIR__ . '/RestFormat.php');
+require_once(__DIR__ . '/RestException.php');
+require_once(__DIR__ . '/AuthServer.php');
+require_once(__DIR__ . '/Auth/HTTPAuthServer.php');
 
 use Exception;
 use ReflectionClass;

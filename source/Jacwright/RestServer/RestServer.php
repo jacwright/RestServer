@@ -57,6 +57,12 @@ class RestServer {
 	public $useCors = false;
 	public $allowedOrigin = '*';
 
+	/**
+	 * Default format / mime type of request when there is none i.e no Content-Type present
+	 */
+	public $mimeDefault;
+
+	protected $mime = null;   // special parameter for mime type of posted data
 	protected $data = null;   // special parameter for post data
 	protected $query = null;  // special parameter for query string
 	protected $map = array();
@@ -83,6 +89,10 @@ class RestServer {
 		}
 
 		$this->root = $dir;
+
+		// To retain the original behavior of RestServer
+		$this->mimeDefault = RestFormat::JSON; // from input
+		$this->format = RestFormat::JSON; // for output
 
 		// For backwards compatability, register HTTPAuthServer
 		$this->setAuthHandler(new \Jacwright\RestServer\Auth\HTTPAuthServer);
@@ -124,6 +134,7 @@ class RestServer {
 		}
 
 		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
+			$this->mime = $this->getMime();
 			$this->data = $this->getData();
 		}
 
@@ -291,6 +302,10 @@ class RestServer {
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
 					$params = array();
+					if (isset($args['mime'])) {
+						$params += array_fill(0, $args['mime'] + 1, null);
+						$params[$args['mime']] = $this->mime;
+					}
 					if (isset($args['data'])) {
 						$params += array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;
@@ -310,6 +325,9 @@ class RestServer {
 					$params = array();
 					$paramMap = array();
 
+					if (isset($args['mime'])) {
+						$params[$args['mime']] = $this->mime;
+					}
 					if (isset($args['data'])) {
 						$params[$args['data']] = $this->data;
 					}
@@ -466,9 +484,32 @@ class RestServer {
 		return $format;
 	}
 
+	public function getMime() {
+		$mime = $this->mimeDefault;
+		if (!empty($_SERVER["CONTENT_TYPE"])) {
+			$mime = strtolower(trim($_SERVER["CONTENT_TYPE"]));
+		}
+		return $mime;
+	}
+
 	public function getData() {
 		$data = file_get_contents('php://input');
-		$data = json_decode($data, $this->jsonAssoc);
+
+		switch($this->mime) {
+			case RestFormat::FORM:
+				parse_str($data, $data);
+				break;
+			case RestFormat::JSON:
+				$data = json_decode($data, $this->jsonAssoc);
+				break;
+			case RestFormat::XML:
+			case RestFormat::HTML:
+			case RestFormat::TXT:
+			case RestFormat::FILE:
+			default: // And for all other formats / mime types
+				// No action needed
+				break;
+		}
 
 		return $data;
 	}

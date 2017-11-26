@@ -74,6 +74,28 @@ class TestController
     }
 
     /**
+     * Upload a file
+     *
+     * @url PUT /files/$filename
+     */
+    public function upload($filename, $data, $mime)
+    {
+        $storage_dir  = sys_get_temp_dir();
+        $allowedTypes = array('pdf' => 'application/pdf', 'html' => 'plain/html', 'wav' => 'audio/wav');
+        if (in_array($mime, $allowedTypes)) {
+          if (!empty($data)) {
+            $file_path = $storage_dir . DIRECTORY_SEPARATOR . $filename;
+            file_put_contents($file_path, $data);
+            return $filename;
+          } else {
+            throw new RestException(411, "Empty file");
+          }
+        } else {
+          throw new RestException(415, "Unsupported File Type");
+        }
+    }
+
+    /**
      * Get Charts
      * 
      * @url GET /charts

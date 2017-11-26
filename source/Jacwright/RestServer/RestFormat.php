@@ -33,6 +33,8 @@ class RestFormat {
 	const HTML  = 'text/html';
 	const JSON  = 'application/json';
 	const XML   = 'application/xml';
+	const FORM  = 'application/x-www-form-urlencoded';
+	const FILE  = 'application/octet-stream';
 
 	/** @var array */
 	static public $formats = array(
@@ -41,5 +43,7 @@ class RestFormat {
 		'html'  => RestFormat::HTML,
 		'json'  => RestFormat::JSON,
 		'xml'   => RestFormat::XML,
+		'form'  => RestFormat::FORM,
+		'file'  => RestFormat::FILE
 	);
 }

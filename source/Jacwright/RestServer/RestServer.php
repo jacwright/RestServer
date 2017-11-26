@@ -541,6 +541,7 @@ class RestServer {
 						$domElement->parentNode->appendChild($node);
 					}
 				} else {
+					$index = str_replace(' ', '_', $index);
 					$plural = $DOMDocument->createElement($index);
 					$domElement->appendChild($plural);
 					$node = $plural;

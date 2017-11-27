@@ -35,6 +35,8 @@ use ReflectionClass;
 use ReflectionObject;
 use ReflectionMethod;
 use DOMDocument;
+use SplFileInfo;
+use finfo;
 
 /**
  * Description of RestServer
@@ -508,7 +510,7 @@ class RestServer {
 				break;
 			case RestFormat::XML:
 			case RestFormat::HTML:
-			case RestFormat::TXT:
+			case RestFormat::PLAIN:
 			case RestFormat::FILE:
 			default: // And for all other formats / mime types
 				// No action needed
@@ -519,21 +521,30 @@ class RestServer {
 	}
 
 	public function sendFile($file) {
+		$filename = $file->getFilename();
+		$filepath = $file->getRealPath();
+		$size = $file->getSize();
+
 		$fInfo = new finfo(FILEINFO_MIME);
-		$fObject = $file->openFile();
+		$content_type = $fInfo->file($filepath);
+
+		$data = file_get_contents($filepath);
+		$filename_quoted = sprintf('"%s"', addcslashes($filename, '"\\'));
 
 		header('Content-Description: File Transfer');
-		header('Content-Type: ' . $fInfo->file($fObject->getRealPath()));
-		header('Content-Disposition: attachment; filename=' . $fObject->getFilename());
+		header('Content-Type: ' . $content_type);
+		header('Content-Disposition: attachment; filename=' . $filename_quoted);
 		header('Content-Transfer-Encoding: binary');
 		header('Connection: Keep-Alive');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		header('Pragma: public');
-		header('Content-Length: ' . $fObject->getSize());
+		header('Content-Length: ' . $size);
+		if ($this->useCors) {
+			$this->corsHeaders();
+		}
 
-		$fObject->rewind();
-		echo $fObject->fread($fObject->getSize());
+		echo $data;
 	}
 
 	public function sendData($data) {

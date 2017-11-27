@@ -163,7 +163,11 @@ class RestServer {
 					$result = call_user_func_array(array($obj, $method), $params);
 
 					if ($result !== null) {
-						$this->sendData($result);
+						if ($result instanceof SplFileInfo) {
+							$this->sendFile($result);
+						} else {
+							$this->sendData($result);
+						}
 					}
 				}
 			} catch (RestException $e) {
@@ -514,6 +518,23 @@ class RestServer {
 		return $data;
 	}
 
+	public function sendFile($file) {
+		$fInfo = new finfo(FILEINFO_MIME);
+		$fObject = $file->openFile();
+
+		header('Content-Description: File Transfer');
+		header('Content-Type: ' . $fInfo->file($fObject->getRealPath()));
+		header('Content-Disposition: attachment; filename=' . $fObject->getFilename());
+		header('Content-Transfer-Encoding: binary');
+		header('Connection: Keep-Alive');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . $fObject->getSize());
+
+		$fObject->rewind();
+		echo $fObject->fread($fObject->getSize());
+	}
 
 	public function sendData($data) {
 		header("Cache-Control: no-cache, must-revalidate");

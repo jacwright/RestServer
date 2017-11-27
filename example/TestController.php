@@ -96,6 +96,22 @@ class TestController
     }
 
     /**
+     * Download a file
+     *
+     * @url GET /files/$filename
+     */
+    public function download($filename)
+    {
+        $storage_dir = sys_get_temp_dir();
+        $file_path = $storage_dir . DIRECTORY_SEPARATOR . $filename;
+        if (file_exists($file_path)) {
+          return SplFileInfo($file_path);
+        } else {
+          throw new RestException(404, "File not found");
+        }
+    }
+
+    /**
      * Get Charts
      * 
      * @url GET /charts

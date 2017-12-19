@@ -158,8 +158,11 @@ class RestServer {
 			try {
 				$this->initClass($obj);
 
-				if (!$noAuth && !$this->isAuthorized($obj)) {
-					$data = $this->unauthorized($obj);
+				if (!$noAuth && !$this->isAuthenticated($obj)) {
+					$data = $this->unauthenticated($this->url);
+					$this->sendData($data);
+				} else if (!$noAuth && !$this->isAuthorized($obj, $method)) {
+					$data = $this->unauthorized($this->url);
 					$this->sendData($data);
 				} else {
 					$result = call_user_func_array(array($obj, $method), $params);
@@ -255,17 +258,30 @@ class RestServer {
 		}
 	}
 
-	protected function unauthorized($obj) {
-		if ($this->authHandler !== null) {
-			return $this->authHandler->unauthorized($obj);
-		}
-
-		throw new RestException(401, "You are not authorized to access this resource.");
+	public function unauthenticated($path) {
+		header("WWW-Authenticate: Basic realm=\"$this->realm\"");
+		throw new \Jacwright\RestServer\RestException(401, "Invalid credentials, access is denied to $path.");
 	}
 
-	protected function isAuthorized($obj) {
+	public function isAuthenticated($obj) {
 		if ($this->authHandler !== null) {
-			return $this->authHandler->isAuthorized($obj);
+			return $this->authHandler->isAuthenticated($obj);
+		}
+
+		return true;
+	}
+
+	protected function unauthorized($path) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->unauthorized($path);
+		}
+
+		throw new RestException(403, "You are not authorized to access this resource.");
+	}
+
+	protected function isAuthorized($obj, $method) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->isAuthorized($obj, $method);
 		}
 
 		return true;

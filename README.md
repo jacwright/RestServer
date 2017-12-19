@@ -160,9 +160,16 @@ DirectoryIndex index.php
 
 Authentication is unique for each application. But tying your authentication mechanisms into RestServer is easy. By simply adding `authenticate` and `authorize` methods to your `Controller` all requests will call these methods first. If `authenticate()` or `authorize()` returns false, the server will issue a **401 Invalid credentials** or **403 Unauthorized** response respectively. If both `authenticate()` and `authorize()` returns true, the request continues on to call the correct controller action. All actions will run the authorization first unless you add `@noAuth` in the action's docs (I usually put it above the `@url` mappings).
 
-You can select authentication and authorization functions as per your requirements you can implement only `autenticate` if you want to confirm client identity. Or you can implement both, then `authorize` can help to confirm if current client is allowed to access a certain method.
+You can select authentication and authorization methods as per your requirements you can implement only `autenticate` if you want to confirm client identity. Or you can implement both, then `authorize` can help to confirm if current client is allowed to access a certain action. For more detail you can check example file `TestAuthControll.php`.
 
-For more detail you can check example file `TestAuthControll.php`. Currently default authentication handler support **Basic** and **Bearer** authentication headers. and pass `[username, password]` or `bearer token` respectively to `authenticate()` method in your controller. In case you want to authenticate clients using some other method like cookies, You can do that inside `authenticate` method. You may replace default authentication handler by pass your own implementation of `AuthServer` interface to RestServer instance.
+Currently default authentication handler support **Basic** and **Bearer** headers based authentication. and pass `[username, password]` or `bearer token` respectively to `authenticate()` method in your controller. In case you want to authenticate clients using some other method like cookies, You can do that inside `authenticate` method. You may replace default authentication handler by passing your own implementation of `AuthServer` interface to RestServer instance. like 
+
+```php
+    /**
+     * include following lines after $server = new RestServer($mode); 
+     */
+    $server->authHandler = new myAuthServer();
+```
 
 RestServer is meant to be a simple mechanism to map your application into a REST API and pass requested data or headers. The rest of the details are up to you.
 
@@ -184,7 +191,15 @@ For security reasons, browsers restrict cross-origin HTTP or REST requests initi
 ```
 
 ### Working with files
-Using Multipart with REST APIs is a bad idea and neither it is supported by `RestServer`. RestServer uses direct file upload approach like S3 services. you can upload one file per request without any additional form data. same is true for file download. for details please check `upload` and `download` methods in example.
+Using Multipart with REST APIs is a bad idea and neither it is supported by `RestServer`. RestServer uses direct file upload approach like S3 services. you can upload one file per request without any additional form data. 
+
+* **Upload:**
+In file uploads action you may use two special parameters in method definition. `$data` and `$mime` first parameter will hold file content and the `$mime` parameter can provide details about file content type.
+
+* **Download:**
+RestServer will start a file download in case a action return `SplFileInfo` object.
+
+For more details please check `upload` and `download` methods in example.
 
 ### Throwing and Handling Errors
 

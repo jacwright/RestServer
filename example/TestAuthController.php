@@ -88,8 +88,11 @@ class TestController
      * @url POST /login
      * @noAuth
      */
-    public function login($username, $password)
+    public function login($data = array())
     {
+        $username = isset($data['username']) ? $data['username'] : null;
+        $password = isset($data['password']) ? $data['password'] : null;
+
         // only if we have valid user
         if (isset($this->listUser[$username]) && $this->listUser[$username] == $password) {
             $token = array(

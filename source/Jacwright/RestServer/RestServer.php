@@ -141,7 +141,8 @@ class RestServer {
 		}
 
 		//preflight requests response
-		if ($this->method == 'OPTIONS' && getallheaders()->Access-Control-Request-Headers) {
+		$headers = (object)getallheaders();
+		if ($this->method == 'OPTIONS' && $headers->Access-Control-Request-Headers) {
 			$this->sendData($this->options());
 		}
 
@@ -259,7 +260,11 @@ class RestServer {
 	}
 
 	public function unauthenticated($path) {
-		header("WWW-Authenticate: Basic realm=\"$this->realm\"");
+		if ($this->authHandler !== null) {
+			return $this->authHandler->unauthenticated($path);
+		}
+
+		header("WWW-Authenticate: Basic realm=\"API Server\"");
 		throw new \Jacwright\RestServer\RestException(401, "Invalid credentials, access is denied to $path.");
 	}
 

@@ -9,23 +9,23 @@ class HTTPAuthServer implements \Jacwright\RestServer\AuthServer {
 	}
 
 	public function isAuthenticated($classObj) {
-    $auth_headers = $this->getAuthHeaders();
+		$auth_headers = $this->getAuthHeaders();
 
-    // Try to use bearer token as default
-    $auth_method = 'Bearer';
-    $credentials = $this->getBearer($auth_headers);
+		// Try to use bearer token as default
+		$auth_method = 'Bearer';
+		$credentials = $this->getBearer($auth_headers);
 
-    // TODO: add digest method
+		// TODO: add digest method
 
-    // In case bearer token is not present try with Basic autentication
-    if (empty($credentials)) {
-      $auth_method = 'Basic';
-      $credentials = $this->getBasic($auth_headers);
-    }
+		// In case bearer token is not present try with Basic autentication
+		if (empty($credentials)) {
+			$auth_method = 'Basic';
+			$credentials = $this->getBasic($auth_headers);
+		}
 
-    if (method_exists($classObj, 'authenticate')) {
-      return $classObj->authenticate($credentials, $auth_method);
-    }
+		if (method_exists($classObj, 'authenticate')) {
+			return $classObj->authenticate($credentials, $auth_method);
+		}
 
 		return true; // original behavior
 	}
@@ -51,17 +51,20 @@ class HTTPAuthServer implements \Jacwright\RestServer\AuthServer {
 	 * Get username and password from header
 	 */
 	protected function getBasic($headers) {
-    // mod_php
-    if (isset($_SERVER['PHP_AUTH_USER'])) {
-        return array($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
-    } else { // most other servers
-      if (!empty($headers)) {
-        list ($username, $password) = explode(':',base64_decode(substr($headers, 6)));
-        return array('username' => $username, 'password' => $password);
-      }
-    }
-    return array('username' => null, 'password' => null);
-  }
+		// mod_php
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			return array(
+				'username' => $this->server_get('PHP_AUTH_USER'), 
+				'password' => $this->server_get('PHP_AUTH_PW')
+			);
+		} else { // most other servers
+			if (!empty($headers)) {
+				list ($username, $password) = explode(':',base64_decode(substr($headers, 6)));
+				return array('username' => $username, 'password' => $password);
+			}
+		}
+		return array('username' => null, 'password' => null);
+	}
 
 	/**
 	 * Get access token from header
@@ -79,11 +82,11 @@ class HTTPAuthServer implements \Jacwright\RestServer\AuthServer {
 	 * Get username and password from header via Digest method
 	 */
 	protected function getDigest() {
-    if (false) { // TODO // currently not in function
-      return array('username' => null, 'password' => null);
-    }
-    return null;
-  }
+		if (false) { // TODO // currently not functional
+			return array('username' => null, 'password' => null);
+		}
+		return null;
+	}
 
 	/**
 	 * Get authorization header
@@ -102,6 +105,6 @@ class HTTPAuthServer implements \Jacwright\RestServer\AuthServer {
 			}
 		}
 		return $headers;
-  }
+	}
 
 }

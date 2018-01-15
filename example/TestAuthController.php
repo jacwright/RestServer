@@ -19,7 +19,7 @@ class TestController
     /**
      * Mocking up user table
      */
-    $listUser = array(
+    private $listUser = array(
         'admin@domain.tld' => array('email' => 'admin@domain.tld', 'password' => 'adminPass', 'role' => 'admin'),
         'user@domain.tld' => array('email' => 'user@domain.tld', 'password' => 'userPass', 'role' => 'user')
     );
@@ -27,14 +27,14 @@ class TestController
     /**
      * Security
      */
-    $private_key = __DIR__ . DIRECTORY_SEPARATOR . 'testkey';
-    $public_key = __DIR__ . DIRECTORY_SEPARATOR . 'testkey.pub';
-    $hash_type = 'RS256';
+    public $private_key = __DIR__ . DIRECTORY_SEPARATOR . 'testkey';
+    public $public_key = __DIR__ . DIRECTORY_SEPARATOR . 'testkey.pub';
+    public $hash_type = 'RS256';
 
     /**
      * Logged in user
      */
-    $loggedUser = null;
+    private $loggedUser = null;
 
     /**
      * Check client credentials and return true if found valid, false otherwise
@@ -100,7 +100,7 @@ class TestController
                 "iat" => time(),
                 "nbf" => time(),
                 "exp" => time() + (60 * 60 * 24 * 30 * 12 * 1), // valid for one year
-                "username" => $email
+                "username" => $this->listUser[$username]['email'];
             );
 
             // return jwt token

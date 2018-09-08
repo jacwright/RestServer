@@ -116,7 +116,6 @@ class RestServer {
 	public function handle() {
 		$this->url = $this->getPath();
 		$this->method = $this->getMethod();
-		$this->format = $this->getFormat();
 
 		if (($this->useCors) && ($this->method == 'OPTIONS')) {
 			$this->corsHeaders();
@@ -132,7 +131,9 @@ class RestServer {
 			$this->sendData($this->options());
 		}
 
-		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();
+		list($obj, $method, $params, $this->params, $noAuth, $contentType) = $this->findUrl();
+		
+		$this->format = $this->getFormat($contentType);
 
 		if ($obj) {
 			if (is_string($obj) && !($newObj = $this->instantiateClass($obj))) {

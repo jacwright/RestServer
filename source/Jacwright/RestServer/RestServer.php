@@ -497,9 +497,10 @@ class RestServer {
 				foreach ($data->__keepOut() as $prop) {
 					unset($data->$prop);
 				}
+				$this->xml_encode($data);
 			}
 
-			$this->xml_encode($data);
+			echo $data;
 		} else {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;

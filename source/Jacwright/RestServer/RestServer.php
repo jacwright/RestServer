@@ -361,6 +361,9 @@ class RestServer {
 		foreach ($methods as $method) {
 			$doc = $method->getDocComment();
 			$noAuth = strpos($doc, '@noAuth') !== false;
+			if (preg_match_all('/@contentType[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
+        			$contentType = $matches[0][1];
+      			}
 			if (preg_match_all('/@url[ \t]+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
 				$params = $method->getParameters();
 
@@ -381,6 +384,7 @@ class RestServer {
 					$call[] = $args;
 					$call[] = null;
 					$call[] = $noAuth;
+					$call[] = $contentType ?? "";
 
 					$this->map[$httpMethod][$url] = $call;
 				}

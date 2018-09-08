@@ -436,7 +436,10 @@ class RestServer {
 		return $method;
 	}
 
-	public function getFormat() {
+	public function getFormat($contentType = "") {
+		if(!empty($contentType)){
+      			return $contentType;
+    		}
 		$format = RestFormat::PLAIN;
 		$accept_mod = null;
 
@@ -467,7 +470,7 @@ class RestServer {
 			$format = RestFormat::JSON;
 		}
 
-		return $format;
+		return $contentType ?? $format;
 	}
 
 	public function getData() {

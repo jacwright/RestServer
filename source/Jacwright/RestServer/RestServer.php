@@ -668,6 +668,8 @@ class RestServer {
 		header('Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS');
 		header('Access-Control-Allow-Credentials: true');
 		header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, Authorization');
+		header('Access-Control-Expose-Headers: Content-Type, Content-Length, Content-Disposition');
+
 	}
 
 	private $codes = array(

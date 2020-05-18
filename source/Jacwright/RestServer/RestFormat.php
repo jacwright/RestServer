@@ -34,6 +34,7 @@ class RestFormat {
 	const JSON  = 'application/json';
 	const XML   = 'application/xml';
 	const FORM  = 'application/x-www-form-urlencoded';
+	const BASE64= 'base64';
 	const FILE  = 'application/octet-stream';
 
 	/** @var array */
@@ -44,6 +45,7 @@ class RestFormat {
 		'json'  => RestFormat::JSON,
 		'xml'   => RestFormat::XML,
 		'form'  => RestFormat::FORM,
+		'base64'=> RestFormat::BASE64,
 		'file'  => RestFormat::FILE
 	);
 }

@@ -529,6 +529,10 @@ class RestServer {
 			case RestFormat::JSON:
 				$data = json_decode($data, $this->jsonAssoc);
 				break;
+			case RestFormat::BASE64:
+				$this->mime = mime_content_type($data);
+				$data = file_get_contents($data);
+				break;
 			case RestFormat::XML:
 			case RestFormat::HTML:
 			case RestFormat::PLAIN:

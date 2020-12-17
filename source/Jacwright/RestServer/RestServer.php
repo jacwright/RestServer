@@ -135,11 +135,10 @@ class RestServer {
 		list($obj, $method, $params, $this->params, $noAuth) = $this->findUrl();
 
 		if ($obj) {
-			if (is_string($obj) && !($newObj = $this->instantiateClass($obj))) {
+			if (is_string($obj) && !($obj = $this->instantiateClass($obj))) {
 				throw new Exception("Class $obj does not exist");
 			}
 
-			$obj = $newObj;
 			$obj->server = $this;
 
 			try {

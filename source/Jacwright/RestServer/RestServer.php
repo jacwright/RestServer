@@ -35,6 +35,8 @@ use ReflectionClass;
 use ReflectionObject;
 use ReflectionMethod;
 use DOMDocument;
+use SplFileInfo;
+use finfo;
 
 /**
  * Description of RestServer
@@ -57,6 +59,12 @@ class RestServer {
 	public $useCors = false;
 	public $allowedOrigin = '*';
 
+	/**
+	 * Default format / mime type of request when there is none i.e no Content-Type present
+	 */
+	public $mimeDefault;
+
+	protected $mime = null;   // special parameter for mime type of posted data
 	protected $data = null;   // special parameter for post data
 	protected $query = null;  // special parameter for query string
 	protected $map = array();
@@ -83,6 +91,10 @@ class RestServer {
 		}
 
 		$this->root = $dir;
+
+		// To retain the original behavior of RestServer
+		$this->mimeDefault = RestFormat::JSON; // from input
+		$this->format = RestFormat::JSON; // for output
 
 		// For backwards compatability, register HTTPAuthServer
 		$this->setAuthHandler(new \Jacwright\RestServer\Auth\HTTPAuthServer);
@@ -124,11 +136,13 @@ class RestServer {
 		}
 
 		if ($this->method == 'PUT' || $this->method == 'POST' || $this->method == 'PATCH') {
+			$this->mime = $this->getMime();
 			$this->data = $this->getData();
 		}
 
 		//preflight requests response
-		if ($this->method == 'OPTIONS' && getallheaders()->Access-Control-Request-Headers) {
+		$headers = (object)getallheaders();
+		if ($this->method == 'OPTIONS' && $headers->Access-Control-Request-Headers) {
 			$this->sendData($this->options());
 		}
 
@@ -144,14 +158,21 @@ class RestServer {
 			try {
 				$this->initClass($obj);
 
-				if (!$noAuth && !$this->isAuthorized($obj)) {
-					$data = $this->unauthorized($obj);
+				if (!$noAuth && !$this->isAuthenticated($obj)) {
+					$data = $this->unauthenticated($this->url);
+					$this->sendData($data);
+				} else if (!$noAuth && !$this->isAuthorized($obj, $method)) {
+					$data = $this->unauthorized($this->url);
 					$this->sendData($data);
 				} else {
 					$result = call_user_func_array(array($obj, $method), $params);
 
 					if ($result !== null) {
-						$this->sendData($result);
+						if ($result instanceof SplFileInfo) {
+							$this->sendFile($result);
+						} else {
+							$this->sendData($result);
+						}
 					}
 				}
 			} catch (RestException $e) {
@@ -237,17 +258,34 @@ class RestServer {
 		}
 	}
 
-	protected function unauthorized($obj) {
+	public function unauthenticated($path) {
 		if ($this->authHandler !== null) {
-			return $this->authHandler->unauthorized($obj);
+			return $this->authHandler->unauthenticated($path);
 		}
 
-		throw new RestException(401, "You are not authorized to access this resource.");
+		header("WWW-Authenticate: Basic realm=\"API Server\"");
+		throw new \Jacwright\RestServer\RestException(401, "Invalid credentials, access is denied to $path.");
 	}
 
-	protected function isAuthorized($obj) {
+	public function isAuthenticated($obj) {
 		if ($this->authHandler !== null) {
-			return $this->authHandler->isAuthorized($obj);
+			return $this->authHandler->isAuthenticated($obj);
+		}
+
+		return true;
+	}
+
+	protected function unauthorized($path) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->unauthorized($path);
+		}
+
+		throw new RestException(403, "You are not authorized to access this resource.");
+	}
+
+	protected function isAuthorized($obj, $method) {
+		if ($this->authHandler !== null) {
+			return $this->authHandler->isAuthorized($obj, $method);
 		}
 
 		return true;
@@ -290,6 +328,10 @@ class RestServer {
 			if (!strstr($url, '$')) {
 				if ($url == $this->url) {
 					$params = array();
+					if (isset($args['mime'])) {
+						$params += array_fill(0, $args['mime'] + 1, null);
+						$params[$args['mime']] = $this->mime;
+					}
 					if (isset($args['data'])) {
 						$params += array_fill(0, $args['data'] + 1, null);
 						$params[$args['data']] = $this->data;
@@ -309,6 +351,9 @@ class RestServer {
 					$params = array();
 					$paramMap = array();
 
+					if (isset($args['mime'])) {
+						$params[$args['mime']] = $this->mime;
+					}
 					if (isset($args['data'])) {
 						$params[$args['data']] = $this->data;
 					}
@@ -465,13 +510,66 @@ class RestServer {
 		return $format;
 	}
 
+	public function getMime() {
+		$mime = $this->mimeDefault;
+		if (!empty($_SERVER["CONTENT_TYPE"])) {
+			$mime = strtolower(trim($_SERVER["CONTENT_TYPE"]));
+		}
+		return $mime;
+	}
+
 	public function getData() {
 		$data = file_get_contents('php://input');
-		$data = json_decode($data, $this->jsonAssoc);
+
+		switch($this->mime) {
+			case RestFormat::FORM:
+				parse_str($data, $data);
+				break;
+			case RestFormat::JSON:
+				$data = json_decode($data, $this->jsonAssoc);
+				break;
+			case RestFormat::BASE64:
+				$this->mime = mime_content_type($data);
+				$data = file_get_contents($data);
+				break;
+			case RestFormat::XML:
+			case RestFormat::HTML:
+			case RestFormat::PLAIN:
+			case RestFormat::FILE:
+			default: // And for all other formats / mime types
+				// No action needed
+				break;
+		}
 
 		return $data;
 	}
 
+	public function sendFile($file) {
+		$filename = $file->getFilename();
+		$filepath = $file->getRealPath();
+		$size = $file->getSize();
+
+		$fInfo = new finfo(FILEINFO_MIME);
+		$content_type = $fInfo->file($filepath);
+
+		$data = file_get_contents($filepath);
+		$filename_quoted = sprintf('"%s"', addcslashes($filename, '"\\'));
+
+		header('Content-Description: File Transfer');
+		header('Content-Type: ' . $content_type);
+		header('Content-Disposition: attachment; filename=' . $filename_quoted);
+		header('Content-Transfer-Encoding: binary');
+		header('Connection: Keep-Alive');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . $size);
+		if ($this->useCors) {
+			$this->corsHeaders();
+		}
+
+		echo $data;
+	}
 
 	public function sendData($data) {
 		header("Cache-Control: no-cache, must-revalidate");
@@ -564,15 +662,17 @@ class RestServer {
 		$allowedOrigin = (array)$this->allowedOrigin;
 		// if no origin header is present then requested origin can be anything (i.e *)
 		$currentOrigin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
-		if (in_array($currentOrigin, $allowedOrigin)) {
+		if (in_array($currentOrigin, $allowedOrigin) || in_array('*', $allowedOrigin)) {
 			$allowedOrigin = array($currentOrigin); // array ; if there is a match then only one is enough
 		}
 		foreach($allowedOrigin as $allowed_origin) { // to support multiple origins
 			header("Access-Control-Allow-Origin: $allowed_origin");
 		}
 		header('Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS');
-		header('Access-Control-Allow-Credential: true');
+		header('Access-Control-Allow-Credentials: true');
 		header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, Authorization');
+		header('Access-Control-Expose-Headers: Content-Type, Content-Length, Content-Disposition');
+
 	}
 
 	private $codes = array(

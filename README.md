@@ -156,13 +156,22 @@ DirectoryIndex index.php
 </IfModule>
 ```
 
-### Authentication
+### Authentication and Authorization
 
-Authentication is unique for each application. But tying your authentication mechanisms into RestServer is easy. By simply adding a method named `authorize` to your `Controller` all requests will call that method first. If `authorize()` returns false, the server will issue a 401 Unauthorized response. If `authorize()` returns true, the request continues on to call the correct controller action. All actions will run the authorization first unless you add `@noAuth` in the action's docs (I usually put it above the `@url` mappings).
+Authentication is unique for each application. But tying your authentication mechanisms into RestServer is easy. By simply adding `authenticate` and `authorize` methods to your `Controller` all requests will call these methods first. If `authenticate()` or `authorize()` returns false, the server will issue a **401 Invalid credentials** or **403 Unauthorized** response respectively. If both `authenticate()` and `authorize()` returns true, the request continues on to call the correct controller action. All actions will run the authorization first unless you add `@noAuth` in the action's docs (I usually put it above the `@url` mappings).
 
-Inside your authentication method you can use PHP's [`getallheaders`](http://php.net/manual/en/function.getallheaders.php) function or `$_COOKIE` depending on how you want to authorize your users. This is where you would load the user object from your database, and set it to `$this->user = getUserFromDatabase()` so that your action will have access to it later when it gets called.
+You can select authentication and authorization methods as per your requirements you can implement only `autenticate` if you want to confirm client identity. Or you can implement both, then `authorize` can help to confirm if current client is allowed to access a certain action. For more details about authentication. and how to use `JWT` token as bearer header please check example file `TestAuthControll.php`.
 
-RestServer is meant to be a simple mechanism to map your application into a REST API. The rest of the details are up to you.
+Currently default authentication handler support **Basic** and **Bearer** headers based authentication. and pass `[username, password]` or `bearer token` respectively to `authenticate()` method in your controller. In case you want to authenticate clients using some other method like cookies, You can do that inside `authenticate` method. You may replace default authentication handler by passing your own implementation of `AuthServer` interface to RestServer instance. like 
+
+```php
+    /**
+     * include following lines after $server = new RestServer($mode); 
+     */
+    $server->authHandler = new myAuthServer();
+```
+
+RestServer is meant to be a simple mechanism to map your application into a REST API and pass requested data or headers. The rest of the details are up to you.
 
 ### Cross-origin resource sharing
 
@@ -180,6 +189,17 @@ For security reasons, browsers restrict cross-origin HTTP or REST requests initi
      // or a wildcard
      $server->allowedOrigin = '*';
 ```
+
+### Working with files
+Using Multipart with REST APIs is a bad idea and neither it is supported by `RestServer`. RestServer uses direct file upload approach like S3 services. you can upload one file per request without any additional form data. 
+
+* **Upload:**
+In file uploads action you may use two special parameters in method definition. `$data` and `$mime` first parameter will hold file content and the `$mime` parameter can provide details about file content type.
+
+* **Download:**
+RestServer will start a file download in case a action return `SplFileInfo` object.
+
+For more details please check `upload` and `download` methods in example.
 
 ### Throwing and Handling Errors
 

@@ -150,9 +150,7 @@ class RestServer {
 				} else {
 					$result = call_user_func_array(array($obj, $method), $params);
 
-					if ($result !== null) {
-						$this->sendData($result);
-					}
+					$this->sendData($result);
 				}
 			} catch (RestException $e) {
 				$this->handleError($e->getCode(), $e->getMessage());
@@ -482,7 +480,9 @@ class RestServer {
 			$this->corsHeaders();
 		}
 
-		if ($this->format == RestFormat::XML) {
+		if ($data === null) {
+			$this->setStatus(204);
+		} else if ($this->format == RestFormat::XML) {
 			if (is_object($data) && method_exists($data, '__keepOut')) {
 				$data = clone $data;
 				foreach ($data->__keepOut() as $prop) {

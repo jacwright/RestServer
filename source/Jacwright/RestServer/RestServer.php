@@ -128,7 +128,7 @@ class RestServer {
 		}
 
 		//preflight requests response
-		if ($this->method == 'OPTIONS' && getallheaders()->Access-Control-Request-Headers) {
+		if ($this->method == 'OPTIONS' && getallheaders()['Access-Control-Request-Headers']) {
 			$this->sendData($this->options());
 		}
 

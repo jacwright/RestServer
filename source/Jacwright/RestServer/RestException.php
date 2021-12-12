@@ -28,7 +28,15 @@ namespace Jacwright\RestServer;
 use Exception;
 
 class RestException extends Exception {
-	public function __construct($code, $message = null) {
+	private $_data = '';
+
+	public function __construct($code, $message = null, $data = null) {
+		$this->_data = $data;
 		parent::__construct($message, $code);
+	}
+
+	public function getData()
+	{
+			return $this->_data;
 	}
 }

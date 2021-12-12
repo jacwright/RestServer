@@ -155,7 +155,7 @@ class RestServer {
 					}
 				}
 			} catch (RestException $e) {
-				$this->handleError($e->getCode(), $e->getMessage());
+				$this->handleError($e->getCode(), $e->getMessage(), $e->getData());
 			}
 		} else {
 			$this->handleError(404);
@@ -196,7 +196,7 @@ class RestServer {
 		$this->errorClasses[] = $class;
 	}
 
-	public function handleError($statusCode, $errorMessage = null) {
+	public function handleError($statusCode, $errorMessage = null, $data = null) {
 		$method = "handle$statusCode";
 
 		foreach ($this->errorClasses as $class) {
@@ -220,7 +220,7 @@ class RestServer {
 		}
 
 		$this->setStatus($statusCode);
-		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
+		$this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage, 'data' => $data)));
 	}
 
 	protected function instantiateClass($obj) {

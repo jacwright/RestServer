@@ -143,6 +143,8 @@ You can [view the RestServer class](https://github.com/jacwright/RestServer/blob
 
 Good luck and let me know if you end up using it!
 
+### Rewrite
+#### Apache
 **Update:** I am including an example .htaccess file for anyone who might need it. It will only rewrite requests to files that don’t exist, so you can have images, css, or other PHP files in your webroot and they will still work. Anything that would give a 404 will redirect to your index.php file.
 
 ```
@@ -154,6 +156,14 @@ DirectoryIndex index.php
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
+```
+
+#### Nginx
+Modify `nginx.conf` or `your-vhost.conf`
+```
+location /api {
+    try_files $uri /api/index.php;
+}
 ```
 
 ### Authentication
